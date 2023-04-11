@@ -58,7 +58,8 @@ contract UsernameNFT is ERC721, Ownable {
         uint96 duration
     ) external onlyController returns (uint256) {
         require(nameToTokenId[name] == 0, "Name already registered");
-        uint256 tokenId = totalSupply++;
+        totalSupply++;
+        uint256 tokenId = totalSupply;
         _safeMint(to, tokenId);
         tokenData[tokenId] = TokenData({
             owner: to,
@@ -129,7 +130,6 @@ contract UsernameNFT is ERC721, Ownable {
     }
 
     /**
-     * TO-DO: Implement this function
      * @notice Returns the URI for a given NFT.
      * @param tokenId The token ID of the NFT.
      * @return string memory The URI of the NFT.
@@ -137,7 +137,6 @@ contract UsernameNFT is ERC721, Ownable {
     function tokenURI(
         uint256 tokenId
     ) public pure override returns (string memory) {
-        //convert tokenId to string
         return Strings.toString(tokenId);
     }
 }
