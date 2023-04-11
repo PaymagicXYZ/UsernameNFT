@@ -1,6 +1,7 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { setBlockTimestamp, getBlockTimestamp } from "../utils";
 
 describe("UsernameNFT", function () {
   async function deployDummyNFT() {
@@ -61,16 +62,12 @@ describe("UsernameNFT", function () {
 
         const tx = await usernameNFT.mint(addr1.address, name, duration);
 
-        const receipt = await tx.wait();
+        const tokenId = await usernameNFT.nameToTokenId(name);
+        const tokenData = await usernameNFT.getTokenData(tokenId);
 
-        //get block.timestamp from receipt
+        expect(tokenData.owner).to.equal(addr1.address);
 
-        // const tokenId = await usernameNFT.nameToTokenId(name);
-        // const tokenData = await usernameNFT.getTokenData(tokenId);
-
-        // expect(tokenData.owner).to.equal(addr1.address);
-
-        // expect(tokenData.duration).to.equal(duration);
+        expect(tokenData.duration).to.equal(duration);
       });
       it("Should not allow minting a token with an existing name", async function () {
         const { usernameNFT, owner, addr1, addr2 } = await loadFixture(
@@ -80,7 +77,6 @@ describe("UsernameNFT", function () {
         const name = "testname";
         const duration = 31536000; // 1 year in seconds
 
-        // Simulate the controller contract
         await usernameNFT.setController(owner.address);
 
         await usernameNFT.mint(addr1.address, name, duration);
@@ -125,7 +121,6 @@ describe("UsernameNFT", function () {
         const name = "testname";
         const duration = 31536000; // 1 year in seconds
 
-        // Simulate the controller contract
         await usernameNFT.setController(owner.address);
 
         await usernameNFT.mint(addr1.address, name, duration);
@@ -138,36 +133,38 @@ describe("UsernameNFT", function () {
           deployDummyNFT
         );
 
-        const name = "testname";
-        const duration = 1; // 1 second
-
-        // Simulate the controller contract
         await usernameNFT.setController(owner.address);
 
+        const name = "testname";
+        const duration = 10000; // 10000 seconds
+
+        const blocktimestamp = await getBlockTimestamp();
         await usernameNFT.mint(addr1.address, name, duration);
 
-        // // Increase block.timestamp past expiration
+        await setBlockTimestamp(blocktimestamp + 10002);
 
-        // expect(await usernameNFT.resolveName(name)).to.equal(
-        //   ethers.constants.AddressZero
-        // );
+        expect(await usernameNFT.resolveName(name)).to.equal(
+          ethers.constants.AddressZero
+        );
       });
       it("Should return an empty string for expired addresses", async function () {
         const { usernameNFT, owner, addr1, addr2 } = await loadFixture(
           deployDummyNFT
         );
 
-        const name = "testname";
-        const duration = 1; // 1 second
-
-        // Simulate the controller contract
         await usernameNFT.setController(owner.address);
 
+        const name = "testname";
+        const duration = 10000; // 10000 seconds
+
+        const blocktimestamp = await getBlockTimestamp();
         await usernameNFT.mint(addr1.address, name, duration);
 
-        // // Increase block.timestamp past expiration
+        await setBlockTimestamp(blocktimestamp + 10002);
 
-        // expect(await usernameNFT.resolveAddress(addr1.address)).to.equal("");
+        await expect(await usernameNFT.resolveAddress(addr1.address)).to.equal(
+          ""
+        );
       });
     });
   });
