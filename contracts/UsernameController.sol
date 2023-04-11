@@ -30,7 +30,7 @@ contract UsernameController is Ownable {
         string memory name,
         address owner,
         uint96 duration
-    ) external payable onlyOwner returns (uint) {
+    ) external payable returns (uint) {
         uint256 price = dummyOracle.price();
         require(msg.value >= price, "Not enough Ether sent for registration");
         uint256 tokenId = usernameNFT.mint(owner, name, duration);
@@ -46,7 +46,7 @@ contract UsernameController is Ownable {
     function renew(
         uint256 tokenId,
         uint96 duration
-    ) external payable onlyOwner returns (uint) {
+    ) external payable returns (uint) {
         uint256 price = dummyOracle.price();
         require(msg.value >= price, "Not enough Ether sent for registration");
 
@@ -59,6 +59,9 @@ contract UsernameController is Ownable {
         return tokenId;
     }
 
+    /**
+     * @notice Withdraws the accumulated Ether balance from the contract to the contract owner's address
+     */
     function withdraw() public {
         payable(owner()).transfer(address(this).balance);
     }
