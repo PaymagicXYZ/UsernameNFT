@@ -1,30 +1,32 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import { parseEther } from "ethers/lib/utils";
 import { setBlockTimestamp, getBlockTimestamp } from "../utils";
 
 describe("UsernameNFT", function () {
   async function deployDummyNFT() {
+    const price = parseEther("1");
     const [owner, addr1, addr2] = await ethers.getSigners();
 
-    const DummyOracle = await ethers.getContractFactory("DummyOracle");
-    const dummyOracle = await DummyOracle.deploy();
+    const Oracle = await ethers.getContractFactory("Oracle");
+    const oracle = await Oracle.deploy(price);
 
     const UsernameNFT = await ethers.getContractFactory("UsernameNFT");
-    const usernameNFT = await UsernameNFT.deploy();
+    const usernameNFT = await UsernameNFT.deploy("UsernameNFT", "UNFT");
 
     const UsernameController = await ethers.getContractFactory(
       "UsernameController"
     );
     const usernameController = await UsernameController.deploy(
-      dummyOracle.address,
+      oracle.address,
       usernameNFT.address
     );
 
     await usernameNFT.setController(usernameController.address);
 
     return {
-      dummyOracle,
+      oracle,
       usernameNFT,
       usernameController,
       owner,
@@ -60,12 +62,17 @@ describe("UsernameNFT", function () {
         const name = "testname";
         const duration = 31536000; // 1 year in seconds
 
-        const tx = await usernameNFT.mint(addr1.address, name, duration);
+        const tx = await usernameNFT.mint(
+          owner.address,
+          addr1.address,
+          name,
+          duration
+        );
 
         const tokenId = await usernameNFT.nameToTokenId(name);
         const tokenData = await usernameNFT.getTokenData(tokenId);
 
-        expect(tokenData.owner).to.equal(addr1.address);
+        expect(tokenData.resolvedAddress).to.equal(addr1.address);
 
         expect(tokenData.duration).to.equal(duration);
       });
@@ -79,11 +86,14 @@ describe("UsernameNFT", function () {
 
         await usernameNFT.setController(owner.address);
 
-        await usernameNFT.mint(addr1.address, name, duration);
+        await usernameNFT.mint(owner.address, addr1.address, name, duration);
 
         await expect(
-          usernameNFT.mint(addr2.address, name, duration)
-        ).to.be.revertedWith("Name already registered");
+          usernameNFT.mint(owner.address, addr2.address, name, duration)
+        ).to.be.revertedWithCustomError(
+          usernameNFT,
+          "NameAlreadyRegisteredError"
+        );
       });
     });
     describe("Updating token data", function () {
@@ -94,12 +104,12 @@ describe("UsernameNFT", function () {
         const name = "testname";
         const duration = 31536000; // 1 year in seconds
 
-        await usernameNFT.mint(addr1.address, name, duration);
+        await usernameNFT.mint(owner.address, addr1.address, name, duration);
         const tokenId = await usernameNFT.nameToTokenId(name);
 
         const newDuration = 63072000; // 2 years in seconds
         const newData = {
-          owner: addr1.address,
+          resolvedAddress: addr1.address,
           mintTimestamp: Math.floor(Date.now() / 1000),
           duration: newDuration,
         };
@@ -107,7 +117,9 @@ describe("UsernameNFT", function () {
         await usernameNFT.updateTokenData(tokenId, newData);
         const updatedTokenData = await usernameNFT.getTokenData(tokenId);
 
-        expect(updatedTokenData.owner).to.equal(newData.owner);
+        expect(updatedTokenData.resolvedAddress).to.equal(
+          newData.resolvedAddress
+        );
         expect(updatedTokenData.mintTimestamp).to.be.closeTo(
           newData.mintTimestamp,
           5
@@ -123,7 +135,7 @@ describe("UsernameNFT", function () {
 
         await usernameNFT.setController(owner.address);
 
-        await usernameNFT.mint(addr1.address, name, duration);
+        await usernameNFT.mint(owner.address, addr1.address, name, duration);
 
         expect(await usernameNFT.resolveName(name)).to.equal(addr1.address);
         expect(await usernameNFT.resolveAddress(addr1.address)).to.equal(name);
@@ -139,7 +151,7 @@ describe("UsernameNFT", function () {
         const duration = 10000; // 10000 seconds
 
         const blocktimestamp = await getBlockTimestamp();
-        await usernameNFT.mint(addr1.address, name, duration);
+        await usernameNFT.mint(owner.address, addr1.address, name, duration);
 
         await setBlockTimestamp(blocktimestamp + 10002);
 
@@ -158,7 +170,7 @@ describe("UsernameNFT", function () {
         const duration = 10000; // 10000 seconds
 
         const blocktimestamp = await getBlockTimestamp();
-        await usernameNFT.mint(addr1.address, name, duration);
+        await usernameNFT.mint(owner.address, addr1.address, name, duration);
 
         await setBlockTimestamp(blocktimestamp + 10002);
 
