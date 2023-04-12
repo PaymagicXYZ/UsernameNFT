@@ -10,30 +10,45 @@ import "./UsernameController.sol";
  * @dev UsernameNFT contract represents the NFTs for usernames.
  */
 contract UsernameNFT is ERC721, Ownable {
-    constructor() ERC721("Blank", "BLNK") {}
+    constructor(
+        string memory name,
+        string memory symbol
+    ) ERC721(name, symbol) {}
 
     uint256 public totalSupply;
 
     UsernameController public controller;
 
     struct TokenData {
-        address owner;
         uint96 mintTimestamp;
         uint96 duration;
+        address resolvedAddress;
     }
 
     mapping(uint256 => TokenData) public tokenData;
     mapping(string => uint256) public nameToTokenId;
     mapping(address => string) public addressToName;
 
-    event NameRegistered(address indexed owner, string name, uint256 tokenId);
-    event NameRenewed(address indexed owner, string name, uint256 tokenId);
+    event NameRegistered(
+        address indexed resolvedAddress,
+        string name,
+        uint256 tokenId
+    );
+    event NameRenewed(
+        address indexed resolvedAddress,
+        string name,
+        uint256 tokenId
+    );
+
+    error OnlyControllerError();
+    error NameAlreadyRegisteredError();
+    error NameNotRegisteredError();
+    error AddressNotRegisteredError();
 
     modifier onlyController() {
-        require(
-            msg.sender == address(controller),
-            "Only controller can call this function"
-        );
+        if (msg.sender != address(controller)) {
+            revert OnlyControllerError();
+        }
         _;
     }
 
@@ -54,15 +69,18 @@ contract UsernameNFT is ERC721, Ownable {
      */
     function mint(
         address to,
+        address resolvedAddress,
         string memory name,
         uint96 duration
     ) external onlyController returns (uint256) {
-        require(nameToTokenId[name] == 0, "Name already registered");
+        if (nameToTokenId[name] != 0) {
+            revert NameAlreadyRegisteredError();
+        }
         totalSupply++;
         uint256 tokenId = totalSupply;
         _safeMint(to, tokenId);
         tokenData[tokenId] = TokenData({
-            owner: to,
+            resolvedAddress: resolvedAddress,
             mintTimestamp: uint96(block.timestamp),
             duration: duration
         });
@@ -82,7 +100,11 @@ contract UsernameNFT is ERC721, Ownable {
         TokenData memory data
     ) external onlyController {
         tokenData[tokenId] = data;
-        emit NameRenewed(data.owner, addressToName[data.owner], tokenId);
+        emit NameRenewed(
+            data.resolvedAddress,
+            addressToName[data.resolvedAddress],
+            tokenId
+        );
     }
 
     /**
@@ -97,30 +119,34 @@ contract UsernameNFT is ERC721, Ownable {
     }
 
     /**
-     * @notice Returns the owner address for a given username.
+     * @notice Returns the resolved address for a given username.
      * @param name The username to be resolved.
-     * @return address The owner address of the username.
+     * @return address The resolved address of the username.
      */
     function resolveName(string memory name) external view returns (address) {
         uint256 tokenId = nameToTokenId[name];
-        require(tokenId != 0, "Name not registered");
+        if (tokenId == 0) {
+            revert NameNotRegisteredError();
+        }
         TokenData memory data = tokenData[tokenId];
         if (block.timestamp > data.mintTimestamp + data.duration) {
             return address(0);
         }
-        return data.owner;
+        return data.resolvedAddress;
     }
 
     /**
-     * @notice Returns the username for a given owner address.
+     * @notice Returns the username for a given resolved address.
      * @param addr The owner address to be resolved.
-     * @return string memory The username associated with the owner address.
+     * @return string memory The username associated with the resolved address.
      */
     function resolveAddress(
         address addr
     ) external view returns (string memory) {
         string memory name = addressToName[addr];
-        require(bytes(name).length != 0, "Address not registered");
+        if (bytes(name).length == 0) {
+            revert AddressNotRegisteredError();
+        }
         uint256 tokenId = nameToTokenId[name];
         TokenData memory data = tokenData[tokenId];
         if (block.timestamp > data.mintTimestamp + data.duration) {
