@@ -9,9 +9,9 @@ It’s simple to setup, ENS compatible, and all username NFT fees go to support 
 The [Usernames.club](https://usernames.club/) is owned and governed by a [Nounish DAO](https://nouns.build/dao/0xcbfea5c61aa7492610bdda80a927291b485e6f95/12) on Ethereum. To get started your community must win a Pass at auction.
 
 ## Smart Contracts
-UsernameNFT.sol - Ownable ERC 721 NFT with extra `tokenData` storage for resolving addresses, resolving names from an address, and expiration times. Owner can only change the Controller.
-UsernameController.sol - Controls registrations and renewables of the UsernameNFT. Owner can only change the Oracle contract and withdraw funds to itself.
-Oracle.sol - Controls the pricing model of registering UsernameNFTs.
+* UsernameNFT.sol - Ownable ERC 721 NFT with extra `tokenData` storage for resolving addresses, resolving names from an address, and expiration times. Owner can only change the Controller.
+* UsernameController.sol - Controls registrations and renewables of the UsernameNFT. Owner can only change the Oracle contract and withdraw funds to itself.
+* Oracle.sol - Controls the pricing model of registering UsernameNFTs.
 
 ## Run
 
