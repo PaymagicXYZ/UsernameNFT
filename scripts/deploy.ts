@@ -1,19 +1,29 @@
 import { ethers } from "hardhat";
+import { parseEther } from "ethers/lib/utils";
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  const price = parseEther("0.000001");
+  const [owner, addr1, addr2] = await ethers.getSigners();
 
-  const lockedAmount = ethers.utils.parseEther("0.001");
+  const Oracle = await ethers.getContractFactory("Oracle");
+  const oracle = await Oracle.deploy(price);
 
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  const UsernameNFT = await ethers.getContractFactory("UsernameNFT");
+  const usernameNFT = await UsernameNFT.deploy("UsernameNFT", "UNFT");
 
-  await lock.deployed();
-
-  console.log(
-    `Lock with ${ethers.utils.formatEther(lockedAmount)}ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
+  const UsernameController = await ethers.getContractFactory(
+    "UsernameController"
   );
+  const usernameController = await UsernameController.deploy(
+    oracle.address,
+    usernameNFT.address
+  );
+
+  await usernameNFT.setController(usernameController.address);
+
+  console.log(`Oracle: ${oracle.address}`)
+  console.log(`UsernameNFT: ${usernameNFT.address}`)
+  console.log(`UsernameController: ${usernameController.address}`)
 }
 
 // We recommend this pattern to be able to use async/await everywhere
