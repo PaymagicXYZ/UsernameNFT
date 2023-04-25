@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./UsernameController.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title UsernameNFT
  * @dev UsernameNFT contract represents the NFTs for usernames.
@@ -27,7 +29,7 @@ contract UsernameNFT is ERC721, Ownable {
 
     mapping(uint256 => TokenData) public tokenData;
     mapping(string => uint256) public nameToTokenId;
-    mapping(address => string) public addressToName;
+    mapping(address => string) public resolvedAddressToName;
 
     event NameRegistered(
         address indexed resolvedAddress,
@@ -36,6 +38,12 @@ contract UsernameNFT is ERC721, Ownable {
     );
     event NameRenewed(
         address indexed resolvedAddress,
+        string name,
+        uint256 tokenId
+    );
+    event ResolveAddressUpdated(
+        address indexed oldResolvedAddress,
+        address indexed newResolvedAddress,
         string name,
         uint256 tokenId
     );
@@ -85,7 +93,7 @@ contract UsernameNFT is ERC721, Ownable {
             duration: duration
         });
         nameToTokenId[name] = tokenId;
-        addressToName[to] = name;
+        resolvedAddressToName[resolvedAddress] = name;
         emit NameRegistered(to, name, tokenId);
         return tokenId;
     }
@@ -102,7 +110,38 @@ contract UsernameNFT is ERC721, Ownable {
         tokenData[tokenId] = data;
         emit NameRenewed(
             data.resolvedAddress,
-            addressToName[data.resolvedAddress],
+            resolvedAddressToName[data.resolvedAddress],
+            tokenId
+        );
+    }
+
+    /**
+     * @notice Updates the primary name associated with the caller's address.
+     * @param name The new primary name to be associated with the caller's address.
+     */
+    function updatePrimaryName(string memory name) external {
+        uint256 tokenId = nameToTokenId[name];
+        require(tokenId != 0, "Name not registered");
+        require(ownerOf(tokenId) == msg.sender, "Not the owner of the name");
+        resolvedAddressToName[msg.sender] = name;
+    }
+
+    /**
+     * @notice Updates the resolved address for a given NFT.
+     * @param tokenId The token ID of the NFT to be updated.
+     * @param newResolvedAddress The new resolved address.
+     */
+    function updateResolveAddress(
+        uint256 tokenId,
+        address newResolvedAddress
+    ) external onlyController {
+        TokenData storage data = tokenData[tokenId];
+        address oldResolvedAddress = data.resolvedAddress;
+        data.resolvedAddress = newResolvedAddress;
+        emit ResolveAddressUpdated(
+            oldResolvedAddress,
+            newResolvedAddress,
+            resolvedAddressToName[oldResolvedAddress],
             tokenId
         );
     }
@@ -143,7 +182,8 @@ contract UsernameNFT is ERC721, Ownable {
     function resolveAddress(
         address addr
     ) external view returns (string memory) {
-        string memory name = addressToName[addr];
+        string memory name = resolvedAddressToName[addr];
+        console.log(name);
         if (bytes(name).length == 0) {
             revert AddressNotRegisteredError();
         }
@@ -153,6 +193,30 @@ contract UsernameNFT is ERC721, Ownable {
             return "";
         }
         return name;
+    }
+
+    /**
+     * @notice Returns the Unix timestamp of when the given tokenId expires.
+     * @param tokenId The token ID of the NFT.
+     * @return uint The Unix timestamp of when the tokenId expires.
+     */
+    function nameExpires(uint256 tokenId) external view returns (uint) {
+        TokenData memory data = tokenData[tokenId];
+        return data.mintTimestamp + data.duration;
+    }
+
+    /**
+     * @notice Checks if a given name is available for registration.
+     * @param name The name to be checked for availability.
+     * @return bool True if the name is available, false otherwise.
+     */
+    function available(string memory name) external view returns (bool) {
+        uint256 tokenId = nameToTokenId[name];
+        if (tokenId == 0) {
+            return true;
+        }
+        TokenData memory data = tokenData[tokenId];
+        return block.timestamp > data.mintTimestamp + data.duration;
     }
 
     /**
