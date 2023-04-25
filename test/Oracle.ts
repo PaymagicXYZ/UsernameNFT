@@ -1,12 +1,17 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import { parseEther } from "ethers/lib/utils";
+import { parseEther, formatEther } from "ethers/lib/utils";
+import { Oracle__factory } from "../typechain-types";
 import { ethers } from "hardhat";
+import { BigNumber } from "ethers";
 
 describe("Oracle", function () {
   async function deployOracle() {
-    const price = parseEther("1");
-    const Oracle = await ethers.getContractFactory("Oracle");
+    const price = parseEther("0.5");
+
+    const [owner] = await ethers.getSigners();
+
+    const Oracle = new Oracle__factory(owner);
     const oracle = await Oracle.deploy(price);
 
     return { oracle, price };
@@ -14,22 +19,41 @@ describe("Oracle", function () {
 
   describe("Oracle", function () {
     describe("Price", function () {
-      it("Should return the correct price", async function () {
+      it("should set the correct base price on deployment", async () => {
         const { oracle } = await loadFixture(deployOracle);
 
-        const price = await oracle.price();
-
-        expect(price).to.equal(ethers.utils.parseEther("1"));
+        const basePrice = await oracle.basePrice();
+        expect(basePrice).to.equal(parseEther("0.5"));
       });
-      it("Should allow owner to set a new price", async function () {
+      it("should return the base price if username length is 3", async () => {
+        const { oracle } = await loadFixture(deployOracle);
+
+        const price = await oracle.price(3);
+        expect(price).to.equal(await oracle.basePrice());
+      });
+      it("should revert if username length is less than 3", async () => {
+        const { oracle } = await loadFixture(deployOracle);
+
+        await expect(oracle.price(2)).to.be.revertedWithCustomError(
+          oracle,
+          "UsernameTooShort"
+        );
+      });
+      it("Should return correct price inversely proportional to username length", async function () {
+        const { oracle } = await loadFixture(deployOracle);
+
+        const price3 = await oracle.price(3);
+        const price4 = await oracle.price(4);
+        const price5 = await oracle.price(5);
+
+        expect(price3).to.be.gt(price4);
+        expect(price4).to.be.gt(price5);
+      });
+      it("Should allow owner to set a new base price", async function () {
         const { oracle, price } = await loadFixture(deployOracle);
-
         const newPrice = parseEther("2");
-
         const tx = await oracle.setPrice(newPrice);
-
-        expect(await oracle.price()).to.equal(newPrice);
-
+        expect(await oracle.basePrice()).to.equal(newPrice);
         expect(tx).to.emit(oracle, "PriceChanged").withArgs(price, newPrice);
       });
     });
