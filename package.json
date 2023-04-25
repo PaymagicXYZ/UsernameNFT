@@ -6,6 +6,7 @@
   "dependencies": {
     "@chainlink/contracts": "^0.6.1",
     "@openzeppelin/contracts": "^4.8.2",
+    "abdk-libraries-solidity": "^3.2.0",
     "hardhat": "^2.13.0"
   },
   "devDependencies": {
