@@ -35,7 +35,8 @@ contract UsernameController is Ownable {
         address resolvedAddress,
         uint96 duration
     ) external payable returns (uint) {
-        uint256 price = oracle.price();
+        uint256 nameLength = bytes(name).length;
+        uint256 price = oracle.price(nameLength);
         if (msg.value < price) revert InsufficientNativeError();
         uint256 tokenId = usernameNFT.mint(
             msg.sender,
@@ -56,13 +57,21 @@ contract UsernameController is Ownable {
         uint256 tokenId,
         uint96 duration
     ) external payable returns (uint) {
-        uint256 price = oracle.price();
+        UsernameNFT.TokenData memory data = usernameNFT.getTokenData(tokenId);
+
+        string memory name = usernameNFT.resolveAddress(data.resolvedAddress);
+        uint256 price = oracle.price(bytes(name).length);
         if (msg.value < price) revert InsufficientNativeError();
 
-        UsernameNFT.TokenData memory data = usernameNFT.getTokenData(tokenId);
-        if (data.resolvedAddress != msg.sender) revert NotTokenOwnerError();
+        if (usernameNFT.ownerOf(tokenId) != msg.sender)
+            revert NotTokenOwnerError();
 
         data.duration += duration;
+
+        if (data.duration + data.mintTimestamp < block.timestamp) {
+            data.duration = duration;
+        }
+
         usernameNFT.updateTokenData(tokenId, data);
 
         return tokenId;
