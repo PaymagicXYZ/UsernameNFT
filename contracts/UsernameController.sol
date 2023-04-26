@@ -16,7 +16,8 @@ contract UsernameController is Ownable {
 
     error InsufficientNativeError();
     error NotTokenOwnerError();
-    error FailedSendError();
+    error FailedWithdrawError();
+    error NameAlreadyActiveError();
 
     constructor(Oracle _oracle, UsernameNFT _usernameNFT) {
         oracle = _oracle;
@@ -54,25 +55,52 @@ contract UsernameController is Ownable {
      * @return uint The token ID of the updated NFT.
      */
     function renew(
+        address resolvedAddress,
         uint256 tokenId,
         uint96 duration
     ) external payable returns (uint) {
         UsernameNFT.TokenData memory data = usernameNFT.getTokenData(tokenId);
 
-        string memory name = usernameNFT.resolveAddress(data.resolvedAddress);
+        bool isExpired = data.duration + data.mintTimestamp < block.timestamp
+            ? true
+            : false;
+
+        string memory name = usernameNFT.resolvedAddressToName(
+            data.resolvedAddress
+        );
+
         uint256 price = oracle.price(bytes(name).length);
         if (msg.value < price) revert InsufficientNativeError();
 
         if (usernameNFT.ownerOf(tokenId) != msg.sender)
             revert NotTokenOwnerError();
 
-        data.duration += duration;
-
-        if (data.duration + data.mintTimestamp < block.timestamp) {
-            data.duration = duration;
+        if (!isExpired) {
+            uint96 newDuration = data.duration + duration;
+            usernameNFT.updateTokenData(
+                tokenId,
+                UsernameNFT.TokenData({
+                    resolvedAddress: resolvedAddress,
+                    mintTimestamp: uint96(block.timestamp),
+                    duration: newDuration
+                })
+            );
         }
 
-        usernameNFT.updateTokenData(tokenId, data);
+        if (isExpired) {
+            if (usernameNFT.resolveName(name) != address(0)) {
+                revert NameAlreadyActiveError();
+            }
+            uint96 oldMintTimestamp = data.mintTimestamp;
+            usernameNFT.updateTokenData(
+                tokenId,
+                UsernameNFT.TokenData({
+                    resolvedAddress: resolvedAddress,
+                    mintTimestamp: oldMintTimestamp,
+                    duration: data.duration
+                })
+            );
+        }
 
         return tokenId;
     }
@@ -92,7 +120,7 @@ contract UsernameController is Ownable {
     function withdraw() public {
         (bool sent, ) = owner().call{value: address(this).balance}("");
         if (!sent) {
-            revert FailedSendError();
+            revert FailedWithdrawError();
         }
     }
 }

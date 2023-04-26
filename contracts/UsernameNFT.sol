@@ -5,8 +5,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./UsernameController.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title UsernameNFT
  * @dev UsernameNFT contract represents the NFTs for usernames.
@@ -36,7 +34,7 @@ contract UsernameNFT is ERC721, Ownable {
         string name,
         uint256 tokenId
     );
-    event NameRenewed(
+    event TokenDataUpdated(
         address indexed resolvedAddress,
         string name,
         uint256 tokenId
@@ -49,13 +47,22 @@ contract UsernameNFT is ERC721, Ownable {
     );
 
     error OnlyControllerError();
+    error OnlyNFTOwnerError();
     error NameAlreadyRegisteredError();
     error NameNotRegisteredError();
     error AddressNotRegisteredError();
+    error ZeroAddressNotAvailableError();
 
     modifier onlyController() {
         if (msg.sender != address(controller)) {
             revert OnlyControllerError();
+        }
+        _;
+    }
+
+    modifier onlyNFTOwner(uint256 tokenId) {
+        if (msg.sender != ownerOf(tokenId)) {
+            revert OnlyNFTOwnerError();
         }
         _;
     }
@@ -81,11 +88,15 @@ contract UsernameNFT is ERC721, Ownable {
         string memory name,
         uint96 duration
     ) external onlyController returns (uint256) {
-        if (nameToTokenId[name] != 0) {
+        if (resolvedAddress == address(0) || to == address(0)) {
+            revert ZeroAddressNotAvailableError();
+        }
+        uint256 tokenId = nameToTokenId[name];
+        if (tokenId != 0 && !isExpired(tokenId)) {
             revert NameAlreadyRegisteredError();
         }
         totalSupply++;
-        uint256 tokenId = totalSupply;
+        tokenId = totalSupply;
         _safeMint(to, tokenId);
         tokenData[tokenId] = TokenData({
             resolvedAddress: resolvedAddress,
@@ -108,23 +119,26 @@ contract UsernameNFT is ERC721, Ownable {
         TokenData memory data
     ) external onlyController {
         tokenData[tokenId] = data;
-        emit NameRenewed(
+        if (data.resolvedAddress == address(0)) {
+            revert ZeroAddressNotAvailableError();
+        }
+        emit TokenDataUpdated(
             data.resolvedAddress,
             resolvedAddressToName[data.resolvedAddress],
             tokenId
         );
     }
 
-    /**
-     * @notice Updates the primary name associated with the caller's address.
-     * @param name The new primary name to be associated with the caller's address.
-     */
-    function updatePrimaryName(string memory name) external {
-        uint256 tokenId = nameToTokenId[name];
-        require(tokenId != 0, "Name not registered");
-        require(ownerOf(tokenId) == msg.sender, "Not the owner of the name");
-        resolvedAddressToName[msg.sender] = name;
-    }
+    // /**
+    //  * @notice Updates the primary name associated with the caller's address.
+    //  * @param name The new primary name to be associated with the caller's address.
+    //  */
+    // function updatePrimaryName(string memory name) external onlyController {
+    //     uint256 tokenId = nameToTokenId[name];
+    //     require(tokenId != 0, "Name not registered");
+    //     require(ownerOf(tokenId) == msg.sender, "Not the owner of the name");
+    //     resolvedAddressToName[msg.sender] = name;
+    // }
 
     /**
      * @notice Updates the resolved address for a given NFT.
@@ -134,7 +148,7 @@ contract UsernameNFT is ERC721, Ownable {
     function updateResolveAddress(
         uint256 tokenId,
         address newResolvedAddress
-    ) external onlyController {
+    ) external onlyNFTOwner(tokenId) {
         TokenData storage data = tokenData[tokenId];
         address oldResolvedAddress = data.resolvedAddress;
         data.resolvedAddress = newResolvedAddress;
@@ -153,7 +167,7 @@ contract UsernameNFT is ERC721, Ownable {
      */
     function getTokenData(
         uint256 tokenId
-    ) external view returns (TokenData memory) {
+    ) public view returns (TokenData memory) {
         return tokenData[tokenId];
     }
 
@@ -183,7 +197,6 @@ contract UsernameNFT is ERC721, Ownable {
         address addr
     ) external view returns (string memory) {
         string memory name = resolvedAddressToName[addr];
-        console.log(name);
         if (bytes(name).length == 0) {
             revert AddressNotRegisteredError();
         }
@@ -200,9 +213,13 @@ contract UsernameNFT is ERC721, Ownable {
      * @param tokenId The token ID of the NFT.
      * @return uint The Unix timestamp of when the tokenId expires.
      */
-    function nameExpires(uint256 tokenId) external view returns (uint) {
+    function nameExpires(uint256 tokenId) public view returns (uint) {
         TokenData memory data = tokenData[tokenId];
         return data.mintTimestamp + data.duration;
+    }
+
+    function isExpired(uint256 tokenId) public view returns (bool) {
+        return block.timestamp > nameExpires(tokenId);
     }
 
     /**
@@ -210,7 +227,7 @@ contract UsernameNFT is ERC721, Ownable {
      * @param name The name to be checked for availability.
      * @return bool True if the name is available, false otherwise.
      */
-    function available(string memory name) external view returns (bool) {
+    function isAvailable(string memory name) external view returns (bool) {
         uint256 tokenId = nameToTokenId[name];
         if (tokenId == 0) {
             return true;

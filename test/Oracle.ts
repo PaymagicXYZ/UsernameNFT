@@ -9,12 +9,12 @@ describe("Oracle", function () {
   async function deployOracle() {
     const price = parseEther("0.5");
 
-    const [owner] = await ethers.getSigners();
+    const [owner, random] = await ethers.getSigners();
 
     const Oracle = new Oracle__factory(owner);
     const oracle = await Oracle.deploy(price);
 
-    return { oracle, price };
+    return { oracle, random, price };
   }
 
   describe("Oracle", function () {
@@ -49,12 +49,21 @@ describe("Oracle", function () {
         expect(price3).to.be.gt(price4);
         expect(price4).to.be.gt(price5);
       });
+    });
+    describe("SetPrice", function () {
       it("Should allow owner to set a new base price", async function () {
         const { oracle, price } = await loadFixture(deployOracle);
         const newPrice = parseEther("2");
         const tx = await oracle.setPrice(newPrice);
         expect(await oracle.basePrice()).to.equal(newPrice);
         expect(tx).to.emit(oracle, "PriceChanged").withArgs(price, newPrice);
+      });
+      it("Should not allow non-owner to set a new base price", async function () {
+        const { oracle, price, random } = await loadFixture(deployOracle);
+        const newPrice = parseEther("2");
+        expect(oracle.connect(random).setPrice(newPrice)).to.revertedWith(
+          "Ownable: caller is not the owner"
+        );
       });
     });
   });
