@@ -34,15 +34,18 @@ contract Oracle is Ownable {
             return basePrice;
         }
 
+        // Calculate the natural logarithm of the username length
         int128 lnUsernameLength = ABDKMath64x64.ln(
             ABDKMath64x64.fromUInt(usernameLength)
         );
 
+        // Calculate the factor as 2 divided by the username length
         int128 factor = ABDKMath64x64.div(
             ABDKMath64x64.fromUInt(2),
             ABDKMath64x64.fromUInt(usernameLength)
         );
 
+        // Calculate the final price by multiplying the base price, ln(usernameLength), and the factor
         return
             ABDKMath64x64.toUInt(
                 ABDKMath64x64.mul(
