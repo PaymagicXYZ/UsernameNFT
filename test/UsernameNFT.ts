@@ -22,7 +22,7 @@ describe("UsernameNFT", function () {
     const oracle = await Oracle.deploy(price);
 
     const UsernameNFT = new UsernameNFT__factory(owner);
-    const usernameNFT = await UsernameNFT.deploy("UsernameNFT", "UNFT");
+    const usernameNFT = await UsernameNFT.deploy("UsernameNFT", "UNFT", "evm");
 
     const UsernameController = new UsernameController__factory(owner);
     const usernameController = await UsernameController.deploy(
@@ -380,6 +380,21 @@ describe("UsernameNFT", function () {
         const tokenId = await usernameNFT.nameToTokenId(name);
 
         expect(await usernameNFT.isExpired(tokenId)).to.equal(true);
+      });
+    });
+    describe("getDisplayName", () => {
+      it("Should return concatenation of name + '.' + domain", async () => {
+        const { usernameNFT, owner, addr1, addr2 } = await loadFixture(
+          deployDummyNFT
+        );
+        await usernameNFT.setController(owner.address);
+        const name = "testname";
+        const duration = 10000; // 10000 seconds
+        await usernameNFT.mint(owner.address, addr1.address, name, duration);
+
+        expect(await usernameNFT.getDisplayName(addr1.address)).to.equal(
+          "testname.evm"
+        );
       });
     });
   });

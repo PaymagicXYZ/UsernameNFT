@@ -23,7 +23,7 @@ describe("UsernameController", function () {
     const oracle = await Oracle.deploy(price);
 
     const UsernameNFT = new UsernameNFT__factory(owner);
-    const usernameNFT = await UsernameNFT.deploy("UsernameNFT", "UNFT");
+    const usernameNFT = await UsernameNFT.deploy("UsernameNFT", "UNFT", "evm");
 
     const UsernameController = new UsernameController__factory(owner);
     const usernameController = await UsernameController.deploy(

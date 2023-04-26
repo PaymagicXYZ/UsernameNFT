@@ -10,10 +10,15 @@ import "./UsernameController.sol";
  * @dev UsernameNFT contract represents the NFTs for usernames.
  */
 contract UsernameNFT is ERC721, Ownable {
+    string public domain;
+
     constructor(
         string memory name,
-        string memory symbol
-    ) ERC721(name, symbol) {}
+        string memory symbol,
+        string memory _domain
+    ) ERC721(name, symbol) {
+        domain = _domain;
+    }
 
     uint256 public totalSupply;
 
@@ -193,9 +198,7 @@ contract UsernameNFT is ERC721, Ownable {
      * @param addr The owner address to be resolved.
      * @return string memory The username associated with the resolved address.
      */
-    function resolveAddress(
-        address addr
-    ) external view returns (string memory) {
+    function resolveAddress(address addr) public view returns (string memory) {
         string memory name = resolvedAddressToName[addr];
         if (bytes(name).length == 0) {
             revert AddressNotRegisteredError();
@@ -234,6 +237,16 @@ contract UsernameNFT is ERC721, Ownable {
         }
         TokenData memory data = tokenData[tokenId];
         return block.timestamp > data.mintTimestamp + data.duration;
+    }
+
+    /**
+     * @notice Returns the display name for a given address.
+     * @param addr The address to be resolved.
+     * @return string memory The display name associated with the address.
+     */
+    function getDisplayName(address addr) public view returns (string memory) {
+        string memory name = resolveAddress(addr);
+        return string(abi.encodePacked(name, ".", domain));
     }
 
     /**
