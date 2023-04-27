@@ -11,8 +11,20 @@ The [Usernames.club](https://usernames.club/) is owned and governed by a [Nounis
 ## Smart Contracts
 
 - UsernameNFT.sol - An ERC721 non-fungible token (NFT) contract that represents unique usernames. It stores the username data, including the resolved address and duration, and provides functionality for registering, updating, and resolving usernames to their corresponding addresses. The contract also includes functions for checking if a username is expired and handling errors related to invalid addresses or duplicate registrations.
+
 - UsernameController.sol - Responsible for managing the registration, renewal, and updating of usernames. It interacts with the Oracle contract to determine the price for registering or renewing a username and the UsernameNFT contract to store and manage the username data. The contract enforces rules on valid usernames, such as minimum length, and handles errors related to insufficient funds or unauthorized access.
+
 - Oracle.sol - Responsible for determining the price of registering or renewing a username based on its length. The price is inversely proportional to the natural logarithm of the username length. The contract owner can change the base price. The contract utilizes the ABDKMath64x64 library for mathematical operations and inherits from the OpenZeppelin Ownable contract for access control.
+
+## Pricing
+
+The pricing script is located in `scripts/deploy_and_print_pricing.ts`. It is preconfigured to print a formatted table with pricing information, including the base price, username length, and registration/renewal prices for 1, 2, and 3 years for preconfigured base pricing of 0.5, 1.0, and 2.0 Ether.
+
+To run the pricing script, execute the following command:
+
+```
+yarn hardhat pricing
+```
 
 ## Usage
 
@@ -46,13 +58,13 @@ To deploy the contracts to a local Hardhat node, run the following command:
 
 ```
 yarn hardhat deploy
+
 ```
 
 or
 
 ```
 yarn hardhat deploy --network hardhat
-
 ```
 
 If you want to deploy to a different network, replace `hardhat` with the desired network that is configured in your `hardhat.config.ts` file and update the command accordingly.
