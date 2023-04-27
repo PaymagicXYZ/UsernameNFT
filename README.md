@@ -10,7 +10,7 @@ The [Usernames.club](https://usernames.club/) is owned and governed by a [Nounis
 
 ## Smart Contracts
 
-- UsernameNFT.sol - An ERC721 non-fungible token (NFT) contract that represents unique usernames. It stores the username data, including the resolved address and duration, and provides functionality for registering, updating, and resolving usernames to their corresponding addresses. The contract also includes functions for checking if a username is expired and handling errors related to invalid addresses or duplicate registrations.
+- UsernameNFT.sol - An ERC721 non-fungible token (NFT) contract that represents unique usernames. It stores the username data, including the resolved address and duration, and provides functionality for registering, updating, and resolving usernames to their corresponding addresses. The contract also includes functions for checking if a username is expired and handling errors related to invalid addresses or duplicate registrations. An instance of UsernameController must be set with the setController function in UsernameNFT, which can be done with the script at `scripts/set_controller.ts` after the contracts have been deployed in the manner described below.
 
 - UsernameController.sol - Responsible for managing the registration, renewal, and updating of usernames. It interacts with the Oracle contract to determine the price for registering or renewing a username and the UsernameNFT contract to store and manage the username data. The contract enforces rules on valid usernames, such as minimum length, and handles errors related to insufficient funds or unauthorized access.
 
@@ -18,7 +18,7 @@ The [Usernames.club](https://usernames.club/) is owned and governed by a [Nounis
 
 ## Pricing
 
-The pricing script is located in `scripts/deploy_and_print_pricing.ts`. It is preconfigured to print a formatted table with pricing information, including the base price, username length, and registration/renewal prices for 1, 2, and 3 years for preconfigured base pricing of 0.5, 1.0, and 2.0 Ether.
+The pricing script is located at `scripts/deploy_and_print_pricing.ts`. It is preconfigured to print a formatted table with pricing information, including the base price, username length, and registration/renewal prices for 1, 2, and 3 years for preconfigured base pricing of 0.5, 1.0, and 2.0 Ether.
 
 To run the pricing script, execute the following command:
 
