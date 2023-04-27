@@ -1,6 +1,8 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "solidity-coverage";
+import "hardhat-deploy-ethers";
+import "hardhat-deploy";
 
 const config: HardhatUserConfig = {
   solidity: "0.8.19",
@@ -11,6 +13,18 @@ const config: HardhatUserConfig = {
   //     },
   //   },
   // },
+  namedAccounts: {
+    deployer: {
+      default: 0,
+    },
+  },
+  networks: {
+    hardhat: {
+      accounts: {
+        mnemonic: "test test test test test test test test test test test junk",
+      },
+    },
+  },
 };
 
 export default config;

@@ -42,10 +42,17 @@ yarn hardhat coverage
 
 ### Deploy Contracts
 
-To deploy the contracts to a local Hardhat network, run the following command:
+To deploy the contracts to a local Hardhat node, run the following command:
 
 ```
-yarn hardhat run scripts/deploy.ts --network localhost
+yarn hardhat deploy
 ```
 
-Replace `localhost` with the desired network if you want to deploy to a different network.
+or
+
+```
+yarn hardhat deploy --network hardhat
+
+```
+
+If you want to deploy to a different network, replace `hardhat` with the desired network that is configured in your `hardhat.config.ts` file and update the command accordingly.
