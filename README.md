@@ -10,19 +10,42 @@ The [Usernames.club](https://usernames.club/) is owned and governed by a [Nounis
 
 ## Smart Contracts
 
-- UsernameNFT.sol - Ownable ERC 721 NFT with extra `tokenData` storage for resolving addresses, resolving names from an address, and expiration times. Owner can only change the Controller.
-- UsernameController.sol - Controls registrations and renewables of the UsernameNFT. Owner can only change the Oracle contract and withdraw funds to itself.
-- Oracle.sol - Controls the pricing model of registering UsernameNFTs.
+- UsernameNFT.sol - The UsernameNFT contract is an ERC721 non-fungible token (NFT) contract that represents unique usernames. It stores the username data, including the resolved address and duration, and provides functionality for registering, updating, and resolving usernames to their corresponding addresses. The contract also includes functions for checking if a username is expired and handling errors related to invalid addresses or duplicate registrations.
+- UsernameController.sol - Responsible for managing the registration, renewal, and updating of usernames. It interacts with the Oracle contract to determine the price for registering or renewing a username and the UsernameNFT contract to store and manage the username data. The contract enforces rules on valid usernames, such as minimum length, and handles errors related to insufficient funds or unauthorized access.
+- Oracle.sol - Responsible for determining the price of registering or renewing a username based on its length. The price is inversely proportional to the natural logarithm of the username length. The contract owner can change the base price. The contract utilizes the ABDKMath64x64 library for mathematical operations and inherits from the OpenZeppelin Ownable contract for access control.
 
-## Run
+## Usage
 
-Try running some of the following tasks:
+### Compile Contracts
 
-```shell
-yearn hardhat help
-yarn hardhat test
-yarn hardhat coverage
-REPORT_GAS=true yarn hardhat test
-yarn hardhat node
-yarn hardhat run scripts/deploy.ts
+To compile the contracts, run the following command:
+
 ```
+yarn hardhat compile
+```
+
+### Run Tests
+
+To run the tests, execute the following command:
+
+```
+yarn hardhat test
+```
+
+### Generate Code Coverage Report
+
+To generate a code coverage report using the `solidity-coverage` plugin, run the following command:
+
+```
+yarn hardhat coverage
+```
+
+### Deploy Contracts
+
+To deploy the contracts to a local Hardhat network, run the following command:
+
+```
+yarn hardhat run scripts/deploy.ts --network localhost
+```
+
+Replace `localhost` with the desired network if you want to deploy to a different network.
