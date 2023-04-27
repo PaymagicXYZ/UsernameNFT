@@ -7,7 +7,9 @@ import "./UsernameController.sol";
 
 /**
  * @title UsernameNFT
- * @dev UsernameNFT contract represents the NFTs for usernames.
+ * @dev UsernameNFT contract represents the NFTs for usernames. Each NFT represents a unique username
+ * and has an associated resolved address. The contract also stores the duration for which the username
+ * is registered and the timestamp when it was minted or renewed.
  */
 contract UsernameNFT is ERC721, Ownable {
     string public domain;
@@ -75,6 +77,7 @@ contract UsernameNFT is ERC721, Ownable {
     /**
      * @notice Sets the controller contract address.
      * @param _controller address - The address of the controller contract.
+     * @dev The controller contract is responsible for minting and updating token data.
      */
     function setController(address _controller) external onlyOwner {
         controller = UsernameController(_controller);
@@ -83,9 +86,12 @@ contract UsernameNFT is ERC721, Ownable {
     /**
      * @notice Mints a new NFT for a given name if it's available.
      * @param to The address of the user who will own the NFT.
+     * @param resolvedAddress The address that the username will resolve to.
      * @param name The desired username.
      * @param duration The duration for which the username will be registered.
      * @return uint256 The token ID of the minted NFT.
+     * @dev This function can only be called by the controller contract. It checks if the name is available
+     * and mints a new NFT with the given token data if it is.
      */
     function mint(
         address to,
@@ -118,6 +124,8 @@ contract UsernameNFT is ERC721, Ownable {
      * @notice Updates the token data for a given NFT.
      * @param tokenId The token ID of the NFT to be updated.
      * @param data The updated token data.
+     * @dev This function can only be called by the controller contract. It updates the token data
+     * for the given tokenId with the provided data.
      */
     function updateTokenData(
         uint256 tokenId,
@@ -149,6 +157,8 @@ contract UsernameNFT is ERC721, Ownable {
      * @notice Updates the resolved address for a given NFT.
      * @param tokenId The token ID of the NFT to be updated.
      * @param newResolvedAddress The new resolved address.
+     * @dev This function can only be called by the owner of the NFT. It updates the resolved address
+     * for the given tokenId with the provided newResolvedAddress.
      */
     function updateResolveAddress(
         uint256 tokenId,
@@ -180,6 +190,8 @@ contract UsernameNFT is ERC721, Ownable {
      * @notice Returns the resolved address for a given username.
      * @param name The username to be resolved.
      * @return address The resolved address of the username.
+     * @dev This function returns the resolved address for a given username if it is registered and not expired.
+     * Otherwise, it returns the zero address.
      */
     function resolveName(string memory name) external view returns (address) {
         uint256 tokenId = nameToTokenId[name];
@@ -197,6 +209,8 @@ contract UsernameNFT is ERC721, Ownable {
      * @notice Returns the username for a given resolved address.
      * @param addr The owner address to be resolved.
      * @return string memory The username associated with the resolved address.
+     * @dev This function returns the username associated with a given resolved address if it is registered and not expired.
+     * Otherwise, it returns an empty string.
      */
     function resolveAddress(address addr) public view returns (string memory) {
         string memory name = resolvedAddressToName[addr];
@@ -204,8 +218,7 @@ contract UsernameNFT is ERC721, Ownable {
             revert AddressNotRegisteredError();
         }
         uint256 tokenId = nameToTokenId[name];
-        TokenData memory data = tokenData[tokenId];
-        if (block.timestamp > data.mintTimestamp + data.duration) {
+        if (isExpired(tokenId)) {
             return "";
         }
         return name;
@@ -215,34 +228,42 @@ contract UsernameNFT is ERC721, Ownable {
      * @notice Returns the Unix timestamp of when the given tokenId expires.
      * @param tokenId The token ID of the NFT.
      * @return uint The Unix timestamp of when the tokenId expires.
+     * @dev This function calculates the expiration timestamp by adding the duration to the mint timestamp
+     * of the given tokenId.
      */
-    function nameExpires(uint256 tokenId) public view returns (uint) {
+    function nameExpirationTime(uint256 tokenId) public view returns (uint) {
         TokenData memory data = tokenData[tokenId];
         return data.mintTimestamp + data.duration;
     }
 
+    /**
+     * @notice Checks if a given tokenId is expired.
+     * @param tokenId The token ID of the NFT.
+     * @return bool True if the tokenId is expired, false otherwise.
+     * @dev This function checks if the current block timestamp is greater than the expiration timestamp
+     * of the given tokenId.
+     */
     function isExpired(uint256 tokenId) public view returns (bool) {
-        return block.timestamp > nameExpires(tokenId);
+        return block.timestamp > nameExpirationTime(tokenId);
     }
 
     /**
      * @notice Checks if a given name is available for registration.
      * @param name The name to be checked for availability.
      * @return bool True if the name is available, false otherwise.
+     * @dev This function checks if the given name is not registered or if the associated tokenId is expired.
      */
     function isAvailable(string memory name) external view returns (bool) {
-        uint256 tokenId = nameToTokenId[name];
-        if (tokenId == 0) {
-            return true;
-        }
-        TokenData memory data = tokenData[tokenId];
-        return block.timestamp > data.mintTimestamp + data.duration;
+        return nameToTokenId[name] == 0 || isExpired(nameToTokenId[name]);
     }
 
     /**
      * @notice Returns the display name for a given address.
      * @param addr The address to be resolved.
      * @return string memory The display name associated with the address.
+     * @dev This function first resolves the address to its associated username using the resolveAddress function.
+     * If an active, valid username is found, it appends the domain to the username and returns the resulting display name.
+     * Example: If the username is "alice" and the domain is "example", the display name will be "alice.example".
      */
     function getDisplayName(address addr) public view returns (string memory) {
         string memory name = resolveAddress(addr);
@@ -253,6 +274,10 @@ contract UsernameNFT is ERC721, Ownable {
      * @notice Returns the URI for a given NFT.
      * @param tokenId The token ID of the NFT.
      * @return string memory The URI of the NFT.
+     * @dev This function returns the URI of the NFT by converting the tokenId to a string.
+     * The URI can be used to retrieve metadata associated with the NFT, such as a JSON file containing
+     * information about the NFT's properties, image, and other attributes.
+     * Example: If the tokenId is 1, the returned URI will be "1".
      */
     function tokenURI(
         uint256 tokenId
