@@ -7,7 +7,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const basePrice = parseEther("1.0"); // Set the initial base price for the Oracle contract
+  const basePrice = parseEther("0.0001"); // Set the initial base price for the Oracle contract
 
   await deploy("Oracle", {
     from: deployer,
