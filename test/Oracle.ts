@@ -19,19 +19,19 @@ describe("Oracle", function () {
 
   describe("Oracle", function () {
     describe("Price", function () {
-      it("should set the correct base price on deployment", async () => {
+      it("Should set the correct base price on deployment", async () => {
         const { oracle } = await loadFixture(deployOracle);
 
         const basePrice = await oracle.basePrice();
         expect(basePrice).to.equal(parseEther("0.5"));
       });
-      it("should return the base price if username length is 3", async () => {
+      it("Should return the base price if username length is 3", async () => {
         const { oracle } = await loadFixture(deployOracle);
 
         const price = await oracle.price(3, 1);
         expect(price).to.equal(await oracle.basePrice());
       });
-      it("should revert if username length is less than 3", async () => {
+      it("Should revert if username length is less than 3", async () => {
         const { oracle } = await loadFixture(deployOracle);
 
         await expect(oracle.price(2, 1)).to.be.revertedWithCustomError(
@@ -50,7 +50,7 @@ describe("Oracle", function () {
         expect(price4).to.be.gt(price5);
       });
     });
-    describe("setBasePrice", function () {
+    describe("SetBasePrice", function () {
       it("Should allow owner to set a new base price", async function () {
         const { oracle, price } = await loadFixture(deployOracle);
         const newPrice = parseEther("2");

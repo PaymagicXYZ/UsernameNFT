@@ -330,15 +330,15 @@ describe("UsernameController", function () {
         expect(finalBalance).to.equal(initialBalance.add(contractBalance));
       });
     });
-    describe("setOracle", function () {
-      it("should allow owner to set a new Oracle instance", async () => {
+    describe("SetOracle", function () {
+      it("Should allow owner to set a new Oracle instance", async () => {
         const { usernameController } = await loadFixture(deployDummyController);
 
         const randomAddress = getRandomAddress();
         await usernameController.setOracle(randomAddress);
         expect(await usernameController.oracle()).to.equal(randomAddress);
       });
-      it("shouldn't allow non-owner to set a new Oracle instance", async () => {
+      it("Shouldn't allow non-owner to set a new Oracle instance", async () => {
         const { usernameController, addr1 } = await loadFixture(
           deployDummyController
         );
@@ -349,8 +349,8 @@ describe("UsernameController", function () {
         ).to.revertedWith("Ownable: new owner is the zero address");
       });
     });
-    describe("withdraw", function () {
-      it("should revert upon unsuccessful withdrawal", async () => {
+    describe("Withdraw", function () {
+      it("Should revert upon unsuccessful withdrawal", async () => {
         const { usernameController, oracle } = await loadFixture(
           deployDummyController
         );
