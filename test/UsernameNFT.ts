@@ -90,7 +90,7 @@ describe("UsernameNFT", function () {
           duration
         );
         const tokenId = await usernameNFT.nameToTokenId(name);
-        const tokenData = await usernameNFT.getTokenData(tokenId);
+        const tokenData = await usernameNFT.tokenData(tokenId);
         expect(tokenData.resolvedAddress).to.equal(addr1.address);
         expect(tokenData.duration).to.equal(duration);
       });
@@ -165,7 +165,7 @@ describe("UsernameNFT", function () {
           duration: newDuration,
         };
         await usernameNFT.updateTokenData(tokenId, newData);
-        const updatedTokenData = await usernameNFT.getTokenData(tokenId);
+        const updatedTokenData = await usernameNFT.tokenData(tokenId);
         expect(updatedTokenData.resolvedAddress).to.equal(
           newData.resolvedAddress
         );
@@ -267,7 +267,7 @@ describe("UsernameNFT", function () {
         await usernameNFT.mint(owner.address, addr1.address, name, duration);
 
         const tokenId = await usernameNFT.nameToTokenId(name);
-        const tokenData = await usernameNFT.getTokenData(tokenId);
+        const tokenData = await usernameNFT.tokenData(tokenId);
 
         const newTokenData = {
           resolvedAddress: owner.address,
@@ -289,7 +289,7 @@ describe("UsernameNFT", function () {
         await usernameNFT.mint(owner.address, addr1.address, name, duration);
 
         const tokenId = await usernameNFT.nameToTokenId(name);
-        const tokenData = await usernameNFT.getTokenData(tokenId);
+        const tokenData = await usernameNFT.tokenData(tokenId);
 
         expect(
           usernameNFT.connect(addr1).updateTokenData(tokenId, tokenData)
@@ -303,7 +303,7 @@ describe("UsernameNFT", function () {
         await usernameNFT.mint(owner.address, addr1.address, name, duration);
 
         const tokenId = await usernameNFT.nameToTokenId(name);
-        const tokenData = await usernameNFT.getTokenData(tokenId);
+        const tokenData = await usernameNFT.tokenData(tokenId);
 
         const newTokenData = {
           resolvedAddress: ethers.constants.AddressZero,

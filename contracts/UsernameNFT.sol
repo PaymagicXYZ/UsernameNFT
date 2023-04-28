@@ -176,17 +176,6 @@ contract UsernameNFT is ERC721, Ownable {
     }
 
     /**
-     * @notice Returns the token data for a given NFT.
-     * @param tokenId The token ID of the NFT.
-     * @return TokenData memory The token data of the NFT.
-     */
-    function getTokenData(
-        uint256 tokenId
-    ) public view returns (TokenData memory) {
-        return tokenData[tokenId];
-    }
-
-    /**
      * @notice Returns the resolved address for a given username.
      * @param name The username to be resolved.
      * @return address The resolved address of the username.
@@ -195,14 +184,10 @@ contract UsernameNFT is ERC721, Ownable {
      */
     function resolveName(string memory name) external view returns (address) {
         uint256 tokenId = nameToTokenId[name];
-        if (tokenId == 0) {
-            revert NameNotRegisteredError();
-        }
-        TokenData memory data = tokenData[tokenId];
-        if (block.timestamp > data.mintTimestamp + data.duration) {
+        if (tokenId == 0 || isExpired(tokenId)) {
             return address(0);
         }
-        return data.resolvedAddress;
+        return tokenData[tokenId].resolvedAddress;
     }
 
     /**
@@ -214,11 +199,8 @@ contract UsernameNFT is ERC721, Ownable {
      */
     function resolveAddress(address addr) public view returns (string memory) {
         string memory name = resolvedAddressToName[addr];
-        if (bytes(name).length == 0) {
-            revert AddressNotRegisteredError();
-        }
         uint256 tokenId = nameToTokenId[name];
-        if (isExpired(tokenId)) {
+        if (tokenId == 0 || isExpired(tokenId)) {
             return "";
         }
         return name;

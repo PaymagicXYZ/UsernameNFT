@@ -131,7 +131,7 @@ describe("UsernameController", function () {
             value: renewalPrice,
           }
         );
-        const tokenData = await usernameNFT.getTokenData(tokenId);
+        const tokenData = await usernameNFT.tokenData(tokenId);
         expect(tokenData.duration).to.equal(
           (durationInYears + AdditionalDurationInYears) * SECONDS_PER_YEAR
         );
@@ -173,7 +173,7 @@ describe("UsernameController", function () {
             value: renewalPrice,
           }
         );
-        const tokenData = await usernameNFT.getTokenData(tokenId);
+        const tokenData = await usernameNFT.tokenData(tokenId);
         expect(tokenData.duration).to.equal(
           newDurationInYears * SECONDS_PER_YEAR
         );
