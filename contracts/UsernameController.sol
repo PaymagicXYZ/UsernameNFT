@@ -73,9 +73,7 @@ contract UsernameController is Ownable {
     ) external payable checkDuration(durationInYears) returns (uint) {
         UsernameNFT.TokenData memory data = usernameNFT.getTokenData(tokenId);
 
-        bool isExpired = data.duration + data.mintTimestamp < block.timestamp
-            ? true
-            : false;
+        bool isExpired = data.duration + data.mintTimestamp < block.timestamp;
 
         string memory name = usernameNFT.resolvedAddressToName(
             data.resolvedAddress
@@ -141,9 +139,11 @@ contract UsernameController is Ownable {
      * @param durationInYears uint96 - The duration in years.
      * @return uint96 - The duration in seconds.
      */
-    function totalSeconds(
-        uint96 durationInYears
-    ) internal view returns (uint96) {
-        return durationInYears * SECONDS_PER_YEAR;
+    function totalSeconds(uint96 durationInYears) public pure returns (uint96) {
+        uint96 result;
+        assembly {
+            result := mul(durationInYears, 31536000)
+        }
+        return result;
     }
 }
