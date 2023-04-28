@@ -47,7 +47,7 @@ describe("UsernameController", function () {
   describe("UsernameController", function () {
     describe("Register", function () {
       it("Should register a new username and mint an NFT", async function () {
-        const { oracle, usernameNFT, usernameController, owner, addr1, addr2 } =
+        const { oracle, usernameNFT, usernameController, owner, addr1 } =
           await loadFixture(deployDummyController);
 
         const name = "testuser";
@@ -267,7 +267,7 @@ describe("UsernameController", function () {
         );
       });
       it("Should fail if not enough Ether is sent", async function () {
-        const { oracle, usernameNFT, usernameController, owner, addr1, addr2 } =
+        const { oracle, usernameNFT, usernameController, owner, addr1 } =
           await loadFixture(deployDummyController);
         const name = "testuser";
         const durationInYears = 2;

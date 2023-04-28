@@ -130,9 +130,7 @@ describe("UsernameNFT", function () {
         );
       });
       it("Should not minting with resolvedAddress set to zero address", async function () {
-        const { usernameNFT, owner, addr1, addr2 } = await loadFixture(
-          deployDummyNFT
-        );
+        const { usernameNFT, owner, addr1 } = await loadFixture(deployDummyNFT);
         const name = "testname";
         const duration = 31536000; // 1 year in seconds
         await usernameNFT.setController(owner.address);
@@ -187,9 +185,7 @@ describe("UsernameNFT", function () {
         expect(await usernameNFT.resolveAddress(addr1.address)).to.equal(name);
       });
       it("Should return address(0) for expired names", async function () {
-        const { usernameNFT, owner, addr1, addr2 } = await loadFixture(
-          deployDummyNFT
-        );
+        const { usernameNFT, owner, addr1 } = await loadFixture(deployDummyNFT);
         await usernameNFT.setController(owner.address);
         const name = "testname";
         const duration = 10000; // 10000 seconds
@@ -201,9 +197,7 @@ describe("UsernameNFT", function () {
         );
       });
       it("Should return an empty string for expired addresses", async function () {
-        const { usernameNFT, owner, addr1, addr2 } = await loadFixture(
-          deployDummyNFT
-        );
+        const { usernameNFT, owner, addr1 } = await loadFixture(deployDummyNFT);
         await usernameNFT.setController(owner.address);
         const name = "testname";
         const duration = 10000; // 10000 seconds
@@ -217,17 +211,13 @@ describe("UsernameNFT", function () {
     });
     describe("IsAvailable", () => {
       it("Should return true if a given name is available for registration", async () => {
-        const { usernameNFT, owner, addr1, addr2 } = await loadFixture(
-          deployDummyNFT
-        );
+        const { usernameNFT } = await loadFixture(deployDummyNFT);
 
         expect(await usernameNFT.isAvailable("username1")).to.equal(true);
       });
 
       it("Should return false if a given name is not available for registration", async () => {
-        const { usernameNFT, owner, addr1, addr2 } = await loadFixture(
-          deployDummyNFT
-        );
+        const { usernameNFT, owner, addr1 } = await loadFixture(deployDummyNFT);
         await usernameNFT.setController(owner.address);
         const name = "testname";
         const duration = 10000; // 10000 seconds
@@ -237,7 +227,7 @@ describe("UsernameNFT", function () {
     });
     describe("ResolveName", () => {
       it("Should revert if name unregistered ", async () => {
-        const { usernameNFT, owner, addr1 } = await loadFixture(deployDummyNFT);
+        const { usernameNFT } = await loadFixture(deployDummyNFT);
 
         const name = "Test";
 
@@ -249,7 +239,7 @@ describe("UsernameNFT", function () {
     });
     describe("ResolveAddress", () => {
       it("Should revert if address unregistered", async () => {
-        const { usernameNFT, owner, addr1 } = await loadFixture(deployDummyNFT);
+        const { usernameNFT } = await loadFixture(deployDummyNFT);
 
         const randomAddress = getRandomAddress();
 
@@ -366,9 +356,7 @@ describe("UsernameNFT", function () {
         expect(await usernameNFT.isExpired(tokenId)).to.equal(false);
       });
       it("Should return true if a given name is expired", async () => {
-        const { usernameNFT, owner, addr1, addr2 } = await loadFixture(
-          deployDummyNFT
-        );
+        const { usernameNFT, owner, addr1 } = await loadFixture(deployDummyNFT);
         await usernameNFT.setController(owner.address);
         const name = "testname";
         const duration = 10000; // 10000 seconds
@@ -384,9 +372,7 @@ describe("UsernameNFT", function () {
     });
     describe("GetDisplayName", () => {
       it("Should return concatenation of name + '.' + domain", async () => {
-        const { usernameNFT, owner, addr1, addr2 } = await loadFixture(
-          deployDummyNFT
-        );
+        const { usernameNFT, owner, addr1 } = await loadFixture(deployDummyNFT);
         await usernameNFT.setController(owner.address);
         const name = "testname";
         const duration = 10000; // 10000 seconds
