@@ -123,14 +123,9 @@ describe("UsernameController", function () {
           name.length,
           AdditionalDurationInYears
         );
-        await usernameController.renew(
-          addr1.address,
-          tokenId,
-          AdditionalDurationInYears,
-          {
-            value: renewalPrice,
-          }
-        );
+        await usernameController.renew(tokenId, AdditionalDurationInYears, {
+          value: renewalPrice,
+        });
         const tokenData = await usernameNFT.tokenData(tokenId);
         expect(tokenData.duration).to.equal(
           (durationInYears + AdditionalDurationInYears) * SECONDS_PER_YEAR
@@ -165,14 +160,9 @@ describe("UsernameController", function () {
         const totalSeconds = durationInYears * SECONDS_PER_YEAR;
         await setBlockTimestamp(blocktimestamp + 1 + totalSeconds);
         const tokenId = await usernameNFT.nameToTokenId(name);
-        await usernameController.renew(
-          addr1.address,
-          tokenId,
-          newDurationInYears,
-          {
-            value: renewalPrice,
-          }
-        );
+        await usernameController.renew(tokenId, newDurationInYears, {
+          value: renewalPrice,
+        });
         const tokenData = await usernameNFT.tokenData(tokenId);
         expect(tokenData.duration).to.equal(
           newDurationInYears * SECONDS_PER_YEAR
@@ -213,14 +203,9 @@ describe("UsernameController", function () {
             value: registrationPrice,
           });
         expect(
-          usernameController.renew(
-            addr1.address,
-            tokenId,
-            additionalDurationInYears,
-            {
-              value: renewalPrice,
-            }
-          )
+          usernameController.renew(tokenId, additionalDurationInYears, {
+            value: renewalPrice,
+          })
         ).to.be.revertedWithCustomError(
           usernameController,
           "NameAlreadyActiveError"
@@ -258,7 +243,7 @@ describe("UsernameController", function () {
         expect(
           usernameController
             .connect(addr1)
-            .renew(addr1.address, tokenId, additionalDurationInYears, {
+            .renew(tokenId, additionalDurationInYears, {
               value: renewalPrice,
             })
         ).to.be.revertedWithCustomError(
@@ -284,11 +269,10 @@ describe("UsernameController", function () {
             value: registrationPrice,
           });
         const tokenId = await usernameNFT.nameToTokenId(name);
-        const additionalDuration = 50;
         await expect(
           usernameController
             .connect(owner)
-            .renew(addr1.address, tokenId, additionalDurationInYears, {
+            .renew(tokenId, additionalDurationInYears, {
               value: parseEther("0.001"),
             })
         ).to.be.revertedWithCustomError(

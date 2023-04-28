@@ -67,21 +67,18 @@ contract UsernameController is Ownable {
      * @return uint The token ID of the updated NFT.
      */
     function renew(
-        address resolvedAddress,
         uint256 tokenId,
         uint8 durationInYears
     ) external payable checkDuration(durationInYears) returns (uint) {
         (
             uint96 mintTimestamp,
             uint96 duration,
-            address resolvedAddress_
+            address resolvedAddress
         ) = usernameNFT.tokenData(tokenId);
 
         bool isExpired = usernameNFT.isExpired(tokenId);
 
-        string memory name = usernameNFT.resolvedAddressToName(
-            resolvedAddress_
-        );
+        string memory name = usernameNFT.resolvedAddressToName(resolvedAddress);
 
         uint256 price = oracle.price(bytes(name).length, durationInYears);
         if (msg.value < price) revert InsufficientNativeError();
@@ -95,7 +92,7 @@ contract UsernameController is Ownable {
             usernameNFT.updateTokenData(
                 tokenId,
                 UsernameNFT.TokenData({
-                    resolvedAddress: resolvedAddress_,
+                    resolvedAddress: resolvedAddress,
                     mintTimestamp: oldMintTimestamp,
                     duration: newDuration
                 })
@@ -109,7 +106,7 @@ contract UsernameController is Ownable {
             usernameNFT.updateTokenData(
                 tokenId,
                 UsernameNFT.TokenData({
-                    resolvedAddress: resolvedAddress_,
+                    resolvedAddress: resolvedAddress,
                     mintTimestamp: uint96(block.timestamp),
                     duration: totalSeconds(durationInYears)
                 })
