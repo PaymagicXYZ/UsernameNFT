@@ -103,7 +103,7 @@ contract UsernameNFT is ERC721, Ownable {
         totalSupply++;
         _safeMint(to, tokenId);
         tokenData[tokenId] = TokenData({
-            resolvedAddress: msg.sender,
+            resolvedAddress: to,
             mintTimestamp: uint96(block.timestamp),
             duration: duration,
             name: name
