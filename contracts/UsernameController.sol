@@ -20,16 +20,6 @@ contract UsernameController is Ownable {
     error NotTokenOwnerError();
     error FailedWithdrawError();
     error NameAlreadyActiveError();
-    error InvalidDurationError();
-
-    uint96 SECONDS_PER_YEAR = 31_536_000;
-
-    modifier checkDuration(uint8 durationInYears) {
-        if (durationInYears < 1 || durationInYears > 3) {
-            revert InvalidDurationError();
-        }
-        _;
-    }
 
     constructor(Oracle _oracle, UsernameNFT _usernameNFT) {
         oracle = _oracle;
@@ -39,48 +29,40 @@ contract UsernameController is Ownable {
     /**
      * @notice Registers a new username and mints an NFT if the name is available.
      * @param name string memory - The desired username.
-     * @param resolvedAddress address - The address of the user who will own the NFT.
-     * @param durationInYears uint8 - The duration for which the username will be registered (1-3 years).
+     * @param duration uint96 - The duration for which the username will be registered
      * @return uint - The token ID of the minted NFT.
      */
     function register(
         string memory name,
-        address resolvedAddress,
-        uint8 durationInYears
-    ) external payable checkDuration(durationInYears) returns (uint) {
-        uint256 nameLength = bytes(name).length;
-        uint256 price = oracle.price(nameLength, durationInYears);
+        uint96 duration
+    ) external payable returns (uint) {
+        uint8 nameLength = uint8(bytes(name).length);
+        uint256 price = oracle.price(nameLength, duration);
         if (msg.value < price) revert InsufficientNativeError();
-        uint256 tokenId = usernameNFT.mint(
-            msg.sender,
-            resolvedAddress,
-            name,
-            totalSeconds(durationInYears)
-        );
+        uint256 tokenId = usernameNFT.mint(msg.sender, name, duration);
         return tokenId;
     }
 
     /**
      * @notice Renews the registration of a username by updating its expiry.
      * @param tokenId The token ID of the NFT representing the username.
-     * @param durationInYears The additional duration for which the username will be registered (1-3 years).
+     * @param duration The additional duration for which the username will be registered
      * @return uint The token ID of the updated NFT.
      */
     function renew(
         uint256 tokenId,
-        uint8 durationInYears
-    ) external payable checkDuration(durationInYears) returns (uint) {
+        uint96 duration
+    ) external payable returns (uint) {
         (
             uint96 mintTimestamp,
-            uint96 duration,
-            address resolvedAddress
+            uint96 _duration,
+            address resolvedAddress,
+            string memory name
         ) = usernameNFT.tokenData(tokenId);
 
         bool isExpired = usernameNFT.isExpired(tokenId);
 
-        string memory name = usernameNFT.resolvedAddressToName(resolvedAddress);
-
-        uint256 price = oracle.price(bytes(name).length, durationInYears);
+        uint256 price = oracle.price(uint8(bytes(name).length), duration);
         if (msg.value < price) revert InsufficientNativeError();
 
         if (usernameNFT.ownerOf(tokenId) != msg.sender)
@@ -88,13 +70,14 @@ contract UsernameController is Ownable {
 
         if (!isExpired) {
             uint96 oldMintTimestamp = mintTimestamp;
-            uint96 newDuration = duration + totalSeconds(durationInYears);
+            uint96 newDuration = _duration + duration;
             usernameNFT.updateTokenData(
                 tokenId,
                 UsernameNFT.TokenData({
                     resolvedAddress: resolvedAddress,
                     mintTimestamp: oldMintTimestamp,
-                    duration: newDuration
+                    duration: newDuration,
+                    name: name
                 })
             );
         }
@@ -108,7 +91,8 @@ contract UsernameController is Ownable {
                 UsernameNFT.TokenData({
                     resolvedAddress: resolvedAddress,
                     mintTimestamp: uint96(block.timestamp),
-                    duration: totalSeconds(durationInYears)
+                    duration: duration,
+                    name: name
                 })
             );
         }
@@ -133,18 +117,5 @@ contract UsernameController is Ownable {
         if (!sent) {
             revert FailedWithdrawError();
         }
-    }
-
-    /**
-     * @notice Converts the duration in years to seconds.
-     * @param durationInYears uint96 - The duration in years.
-     * @return uint96 - The duration in seconds.
-     */
-    function totalSeconds(uint96 durationInYears) public pure returns (uint96) {
-        uint96 result;
-        assembly {
-            result := mul(durationInYears, 31536000)
-        }
-        return result;
     }
 }
