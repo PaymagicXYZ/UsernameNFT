@@ -40,7 +40,7 @@ describe("Oracle", function () {
         const { oracle } = await loadFixture(deployOracle);
 
         const priceThree = await oracle.price(3, SECONDS_PER_YEAR * 2);
-        expect(priceThree).to.equal(parseEther("0.32").mul(2));
+        expect(priceThree).to.equal(parseEther("0.64"));
 
         const priceFour = await oracle.price(4, SECONDS_PER_YEAR * 4.5);
         expect(priceFour).to.equal(parseEther("3.6"));
@@ -49,7 +49,7 @@ describe("Oracle", function () {
         expect(priceFive).to.equal(parseEther("0.014375"));
 
         const priceSix = await oracle.price(3, SECONDS_PER_YEAR * 10);
-        expect(priceThree).to.equal(parseEther("0.32").mul(10));
+        expect(priceSix).to.equal(parseEther("3.2"));
       });
     });
     describe("ChangeFees", function () {
