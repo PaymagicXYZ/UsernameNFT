@@ -132,7 +132,6 @@ contract UsernameNFT is ERC721, Ownable {
             primaryNameTokenId[to] = tokenId;
         }
 
-        // _addressToTokens[to].push(tokenId);
         emit NameRegistered(to, name, tokenId);
         return tokenId;
     }
@@ -155,11 +154,23 @@ contract UsernameNFT is ERC721, Ownable {
         emit TokenDataUpdated(data.resolveAddress, data.name, tokenId);
     }
 
+    /**
+     * @notice Converts a given name to its corresponding token ID.
+     * @param name The name to be converted.
+     * @return uint256 The token ID corresponding to the given name.
+     * @dev This function calculates the token ID by hashing the given name using the keccak256 hash function.
+     */
     function nameToTokenId(string memory name) public pure returns (uint256) {
         return uint256(keccak256(abi.encodePacked(name)));
     }
 
-    //external function for updating primaryname for resolve address
+    /**
+     * @notice Updates the primary name for a given resolved address.
+     * @param tokenId The token ID of the NFT to be updated.
+     * @dev This function can only be called by resolved address of the NFT. It updates the primary name
+     * for the given tokenId with the provided newResolvedAddress. It also updates the primary name
+     * for the old and new resolved addresses if needed.
+     */
     function updatePrimaryName(
         uint256 tokenId
     ) external onlyResolveAddress(tokenId) {
@@ -281,6 +292,13 @@ contract UsernameNFT is ERC721, Ownable {
         return string(abi.encodePacked(tokenData[tokenId].name, ".", domain));
     }
 
+    /**
+     * @notice Generates an SVG image for a given tokenId.
+     * @param tokenId The token ID to be used for generating the SVG.
+     * @return string memory The generated SVG image as a string.
+     * @dev This function generates an SVG image for the given tokenId by concatenating
+     * predefined SVG parts and the tokenId as a string. The resulting SVG image is returned.
+     */
     function generateSVG(
         uint256 tokenId
     ) internal pure returns (string memory) {
@@ -297,6 +315,13 @@ contract UsernameNFT is ERC721, Ownable {
         return string(abi.encodePacked(parts[0], parts[1], parts[2]));
     }
 
+    /**
+     * @notice Generates a JSON string containing the attributes for a given token ID.
+     * @param tokenId The token ID to be used for generating the attributes.
+     * @return string memory The generated JSON string containing the attributes.
+     * @dev This function generates a JSON string containing various attributes associated with the token ID.
+     * The attributes include tokenId, name, resolvedAddress, and expiresAt.
+     */
     function generateAttributes(
         uint256 tokenId
     ) internal view returns (string memory) {
@@ -316,6 +341,13 @@ contract UsernameNFT is ERC721, Ownable {
             );
     }
 
+    /**
+     * @notice Generates a JSON string containing metadata for a given token ID.
+     * @param tokenId The token ID to be used for generating the metadata.
+     * @return string memory The generated JSON string containing the metadata.
+     * @dev This function generates a JSON string containing metadata associated with the token ID.
+     * The metadata includes the name, description, image (as a base64-encoded SVG), and attributes.
+     */
     function generateJSON(
         uint256 tokenId
     ) internal view returns (string memory) {
@@ -344,10 +376,9 @@ contract UsernameNFT is ERC721, Ownable {
      * @notice Returns the URI for a given NFT.
      * @param tokenId The token ID of the NFT.
      * @return string memory The URI of the NFT.
-     * @dev This function returns the URI of the NFT by converting the tokenId to a string.
+     * @dev This function returns the URI of the NFT by encoding the generated JSON metadata as a base64 string.
      * The URI can be used to retrieve metadata associated with the NFT, such as a JSON file containing
      * information about the NFT's properties, image, and other attributes.
-     * Example: If the tokenId is 1, the returned URI will be "1".
      */
     function tokenURI(
         uint256 tokenId
