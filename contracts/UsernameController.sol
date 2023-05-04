@@ -1,7 +1,5 @@
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Oracle.sol";
 import "./UsernameNFT.sol";
@@ -20,6 +18,14 @@ contract UsernameController is Ownable {
     error NotTokenOwnerError();
     error FailedWithdrawError();
     error NameAlreadyActiveError();
+    error OnlyNFTOwnerError();
+
+    modifier onlyNFTOwner(uint256 tokenId) {
+        if (msg.sender != usernameNFT.ownerOf(tokenId)) {
+            revert OnlyNFTOwnerError();
+        }
+        _;
+    }
 
     constructor(Oracle _oracle, UsernameNFT _usernameNFT) {
         oracle = _oracle;
@@ -56,7 +62,7 @@ contract UsernameController is Ownable {
         (
             uint96 mintTimestamp,
             uint96 _duration,
-            address resolvedAddress,
+            address resolveAddress,
             string memory name
         ) = usernameNFT.tokenData(tokenId);
 
@@ -74,7 +80,7 @@ contract UsernameController is Ownable {
             usernameNFT.updateTokenData(
                 tokenId,
                 UsernameNFT.TokenData({
-                    resolvedAddress: resolvedAddress,
+                    resolveAddress: resolveAddress,
                     mintTimestamp: oldMintTimestamp,
                     duration: newDuration,
                     name: name
@@ -83,13 +89,10 @@ contract UsernameController is Ownable {
         }
 
         if (isExpired) {
-            if (usernameNFT.resolveName(name) != address(0)) {
-                revert NameAlreadyActiveError();
-            }
             usernameNFT.updateTokenData(
                 tokenId,
                 UsernameNFT.TokenData({
-                    resolvedAddress: resolvedAddress,
+                    resolveAddress: resolveAddress,
                     mintTimestamp: uint96(block.timestamp),
                     duration: duration,
                     name: name
