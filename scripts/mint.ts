@@ -5,14 +5,8 @@ async function main() {
   const { deployments } = hre;
   const { get } = deployments;
 
-  const usernameNFTAddress = (await get("UsernameNFT")).address;
   const usernameControllerAddress = (await get("UsernameController")).address;
   const oracleAddress = (await get("Oracle")).address;
-
-  const usernameNFTContract = (await ethers.getContractAt(
-    "UsernameNFT",
-    usernameNFTAddress
-  )) as UsernameNFT;
 
   const usernameControllerContract = (await ethers.getContractAt(
     "UsernameController",
@@ -28,11 +22,9 @@ async function main() {
 
   const price = await oracleContract.price(username.length, 100000000);
 
-  const tx = await usernameControllerContract.register(username, 100000000, {
+  await usernameControllerContract.register(username, 100000000, {
     value: price,
   });
-
-  const receipt = await tx.wait();
 
   console.log("Minted!");
 }
