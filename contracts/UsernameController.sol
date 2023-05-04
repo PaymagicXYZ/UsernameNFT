@@ -15,7 +15,7 @@ contract UsernameController is Ownable {
     UsernameNFT public usernameNFT;
 
     error InsufficientNativeError();
-    error NotTokenOwnerError();
+    error NotTokenOwnerOrNameTakenError();
     error FailedWithdrawError();
     error NameAlreadyActiveError();
     error OnlyNFTOwnerError();
@@ -72,7 +72,7 @@ contract UsernameController is Ownable {
         if (msg.value < price) revert InsufficientNativeError();
 
         if (usernameNFT.ownerOf(tokenId) != msg.sender)
-            revert NotTokenOwnerError();
+            revert NotTokenOwnerOrNameTakenError();
 
         if (!isExpired) {
             uint96 oldMintTimestamp = mintTimestamp;

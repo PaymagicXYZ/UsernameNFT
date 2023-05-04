@@ -15,8 +15,7 @@ import {
 import { SECONDS_PER_YEAR } from "../constants";
 
 describe("UsernameNFT", function () {
-  async function deployDummyNFT() {
-    const price = parseEther("1");
+  async function deployUsernameNFT() {
     const [owner, addr1, addr2] = await ethers.getSigners();
 
     const Oracle = new Oracle__factory(owner);
@@ -46,30 +45,34 @@ describe("UsernameNFT", function () {
   describe("UsernameNFT", function () {
     describe("Deployment", function () {
       it("Should set the right owner", async function () {
-        const { usernameNFT, owner } = await loadFixture(deployDummyNFT);
+        const { usernameNFT, owner } = await loadFixture(deployUsernameNFT);
         expect(await usernameNFT.owner()).to.equal(owner.address);
       });
       it("Should have zero total supply initially", async function () {
-        const { usernameNFT } = await loadFixture(deployDummyNFT);
+        const { usernameNFT } = await loadFixture(deployUsernameNFT);
         expect(await usernameNFT.totalSupply()).to.equal(0);
       });
     });
     describe("SetController", function () {
       it("Should set the correct controller address when called by owner", async function () {
-        const { usernameNFT, owner } = await loadFixture(deployDummyNFT);
+        const { usernameNFT, owner } = await loadFixture(deployUsernameNFT);
         await usernameNFT.setController(owner.address);
         expect(await usernameNFT.controller()).to.equal(owner.address);
       });
       it("Should revert when called by non-owner", async function () {
-        const { usernameNFT, owner, addr1 } = await loadFixture(deployDummyNFT);
-        expect(
+        const { usernameNFT, owner, addr1 } = await loadFixture(
+          deployUsernameNFT
+        );
+        await expect(
           usernameNFT.connect(addr1).setController(owner.address)
-        ).to.rejectedWith("Ownable: new owner is the zero address");
+        ).to.revertedWith("Ownable: caller is not the owner");
       });
     });
     describe("Mint", function () {
       it("Should not allow minting by non-controller", async function () {
-        const { usernameNFT, owner, addr1 } = await loadFixture(deployDummyNFT);
+        const { usernameNFT, owner, addr1 } = await loadFixture(
+          deployUsernameNFT
+        );
         await usernameNFT.setController(owner.address);
         const name = "testname";
         const duration = 31536000; // 1 year in seconds
@@ -78,7 +81,9 @@ describe("UsernameNFT", function () {
         ).to.revertedWithCustomError(usernameNFT, "OnlyControllerError");
       });
       it("Should allow minting a new NFT with the correct data", async function () {
-        const { usernameNFT, owner, addr1 } = await loadFixture(deployDummyNFT);
+        const { usernameNFT, owner, addr1 } = await loadFixture(
+          deployUsernameNFT
+        );
         await usernameNFT.setController(owner.address);
         const name = "testname";
         const duration = 31536000; // 1 year in seconds
@@ -91,7 +96,7 @@ describe("UsernameNFT", function () {
       });
       it("Should not allow minting a token with an existing name", async function () {
         const { usernameNFT, owner, addr1, addr2 } = await loadFixture(
-          deployDummyNFT
+          deployUsernameNFT
         );
         const name = "testname";
         const duration = 31536000; // 1 year in seconds
@@ -106,7 +111,7 @@ describe("UsernameNFT", function () {
       });
       it("Should not allow minting to the zero address", async function () {
         const { usernameNFT, owner, addr1, addr2 } = await loadFixture(
-          deployDummyNFT
+          deployUsernameNFT
         );
         const name = "testname";
         const duration = 31536000; // 1 year in seconds
@@ -118,7 +123,7 @@ describe("UsernameNFT", function () {
       describe("Updating token data", function () {
         it("Should update the token data correctly", async function () {
           const { usernameNFT, owner, addr1 } = await loadFixture(
-            deployDummyNFT
+            deployUsernameNFT
           );
           await usernameNFT.setController(owner.address);
           const name = "testname";
@@ -147,7 +152,7 @@ describe("UsernameNFT", function () {
       describe("Resolving names and addresses", function () {
         it("Should resolve names and addresses correctly", async function () {
           const { usernameNFT, owner, addr1 } = await loadFixture(
-            deployDummyNFT
+            deployUsernameNFT
           );
           const name = "testname";
           const duration = 31536000; // 1 year in seconds
@@ -158,41 +163,43 @@ describe("UsernameNFT", function () {
             name
           );
         });
-        // it("Should return address(0) for expired names", async function () {
-        //   const { usernameNFT, owner, addr1 } = await loadFixture(
-        //     deployDummyNFT
-        //   );
-        //   await usernameNFT.setController(owner.address);
-        //   const name = "testname";
-        //   const duration = 10000; // 10000 seconds
-        //   const blocktimestamp = await getBlockTimestamp();
-        //   await usernameNFT.mint(owner.address, name, duration);
-        //   await setBlockTimestamp(blocktimestamp + 10002);
-        //   expect(await usernameNFT.resolveName(name)).to.equal(
-        //     ethers.constants.AddressZero
-        //   );
+        it("Should return address(0) for expired names", async function () {
+          const { usernameNFT, owner, addr1 } = await loadFixture(
+            deployUsernameNFT
+          );
+          await usernameNFT.setController(owner.address);
+          const name = "testname";
+          const duration = 10000; // 10000 seconds
+          const blocktimestamp = await getBlockTimestamp();
+          await usernameNFT.mint(owner.address, name, duration);
+          await setBlockTimestamp(blocktimestamp + 10002);
+          expect(await usernameNFT.resolveName(name)).to.equal(
+            ethers.constants.AddressZero
+          );
+        });
+        it("Should return an empty string for expired addresses", async function () {
+          const { usernameNFT, owner, addr1 } = await loadFixture(
+            deployUsernameNFT
+          );
+          await usernameNFT.setController(owner.address);
+          const name = "testname";
+          const duration = 10000; // 10000 seconds
+          const blocktimestamp = await getBlockTimestamp();
+          await usernameNFT.mint(owner.address, name, duration);
+          await setBlockTimestamp(blocktimestamp + 10002);
+          await expect(
+            await usernameNFT.resolveAddress(addr1.address)
+          ).to.equal("");
+        });
       });
-      // it("Should return an empty string for expired addresses", async function () {
-      //     const { usernameNFT, owner, addr1 } = await loadFixture(deployDummyNFT);
-      //     await usernameNFT.setController(owner.address);
-      //     const name = "testname";
-      //     const duration = 10000; // 10000 seconds
-      //     const blocktimestamp = await getBlockTimestamp();
-      //     await usernameNFT.mint(owner.address, name, duration);
-      //     await setBlockTimestamp(blocktimestamp + 10002);
-      //     await expect(await usernameNFT.resolveAddress(addr1.address)).to.equal(
-      //       ""
-      //     );
-      //   });
-      // });
       describe("Available", () => {
         it("Should return true if a given name is available for registration", async () => {
-          const { usernameNFT } = await loadFixture(deployDummyNFT);
+          const { usernameNFT } = await loadFixture(deployUsernameNFT);
           expect(await usernameNFT.available("username1")).to.equal(true);
         });
         it("Should return false if a given name is not available for registration", async () => {
           const { usernameNFT, owner, addr1 } = await loadFixture(
-            deployDummyNFT
+            deployUsernameNFT
           );
           await usernameNFT.setController(owner.address);
           const name = "testname";
@@ -202,31 +209,25 @@ describe("UsernameNFT", function () {
         });
       });
       describe("ResolveName", () => {
-        it("Should revert if name unregistered ", async () => {
-          const { usernameNFT } = await loadFixture(deployDummyNFT);
+        it("Should return zero address if name unregistered ", async () => {
+          const { usernameNFT } = await loadFixture(deployUsernameNFT);
           const name = "Test";
-          expect(usernameNFT.resolveName(name)).to.revertedWithCustomError(
-            usernameNFT,
-            "NameNotRegisteredError"
+          expect(await usernameNFT.resolveName(name)).to.eq(
+            ethers.constants.AddressZero
           );
         });
       });
       describe("ResolveAddress", () => {
-        it("Should revert if address unregistered", async () => {
-          const { usernameNFT } = await loadFixture(deployDummyNFT);
+        it("Should return empty string", async () => {
+          const { usernameNFT } = await loadFixture(deployUsernameNFT);
           const randomAddress = getRandomAddress();
-          expect(
-            usernameNFT.resolveAddress(randomAddress)
-          ).to.revertedWithCustomError(
-            usernameNFT,
-            "AddressNotRegisteredError"
-          );
+          expect(await usernameNFT.resolveAddress(randomAddress)).to.eq("");
         });
       });
       describe("UpdateTokenData", () => {
         it("Should allow controller to call update token data", async () => {
           const { usernameNFT, owner, addr1 } = await loadFixture(
-            deployDummyNFT
+            deployUsernameNFT
           );
           await usernameNFT.setController(owner.address);
           const name = "testname";
@@ -251,7 +252,7 @@ describe("UsernameNFT", function () {
         });
         it("Should not allow non-controller to call updateTokenData", async () => {
           const { usernameNFT, owner, addr1 } = await loadFixture(
-            deployDummyNFT
+            deployUsernameNFT
           );
           await usernameNFT.setController(owner.address);
           const name = "testname";
@@ -259,13 +260,13 @@ describe("UsernameNFT", function () {
           await usernameNFT.mint(owner.address, name, duration);
           const tokenId = await usernameNFT.nameToTokenId(name);
           const tokenData = await usernameNFT.tokenData(tokenId);
-          expect(
+          await expect(
             usernameNFT.connect(addr1).updateTokenData(tokenId, tokenData)
           ).to.revertedWithCustomError(usernameNFT, "OnlyControllerError");
         });
         it("Should not allow update of tokenData if resolvedAddress is zero address", async () => {
           const { usernameNFT, owner, addr1 } = await loadFixture(
-            deployDummyNFT
+            deployUsernameNFT
           );
           await usernameNFT.setController(owner.address);
           const name = "testname";
@@ -279,7 +280,7 @@ describe("UsernameNFT", function () {
             duration: tokenData.duration,
             name,
           };
-          expect(
+          await expect(
             usernameNFT.updateTokenData(tokenId, newTokenData)
           ).to.revertedWithCustomError(
             usernameNFT,
@@ -290,7 +291,7 @@ describe("UsernameNFT", function () {
       describe("UpdateResolveAddress", () => {
         it("Should allow owner update the resolved address for the given NFT", async () => {
           const { usernameNFT, owner, addr1 } = await loadFixture(
-            deployDummyNFT
+            deployUsernameNFT
           );
           await usernameNFT.setController(owner.address);
           const name = "testname";
@@ -303,7 +304,7 @@ describe("UsernameNFT", function () {
         });
         it("Should not allow non-owner to update the resolved address for the given NFT", async () => {
           const { usernameNFT, owner, addr1 } = await loadFixture(
-            deployDummyNFT
+            deployUsernameNFT
           );
           await usernameNFT.setController(owner.address);
           const name = "testname";
@@ -311,7 +312,7 @@ describe("UsernameNFT", function () {
           await usernameNFT.mint(owner.address, name, duration);
           const tokenId = await usernameNFT.nameToTokenId(name);
           const tokenData = await usernameNFT.tokenData(tokenId);
-          expect(
+          await expect(
             usernameNFT
               .connect(addr1)
               .updateResolveAddress(tokenId, owner.address)
@@ -321,7 +322,7 @@ describe("UsernameNFT", function () {
       describe("IsExpired", () => {
         it("Should return false if a given name is not expired", async () => {
           const { usernameNFT, owner, addr1, addr2 } = await loadFixture(
-            deployDummyNFT
+            deployUsernameNFT
           );
           await usernameNFT.setController(owner.address);
           const name = "testname";
@@ -332,7 +333,7 @@ describe("UsernameNFT", function () {
         });
         it("Should return true if a given name is expired", async () => {
           const { usernameNFT, owner, addr1 } = await loadFixture(
-            deployDummyNFT
+            deployUsernameNFT
           );
           await usernameNFT.setController(owner.address);
           const name = "testname";
@@ -347,7 +348,7 @@ describe("UsernameNFT", function () {
       describe("GetDisplayName", () => {
         it("Should return concatenation of name + '.' + domain", async () => {
           const { usernameNFT, owner, addr1 } = await loadFixture(
-            deployDummyNFT
+            deployUsernameNFT
           );
           await usernameNFT.setController(owner.address);
           const name = "testname";

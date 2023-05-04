@@ -75,9 +75,9 @@ describe("Oracle", function () {
           lengthFour: parseEther("1"),
           lengthFiveOrMore: parseEther("0.003"),
         };
-        expect(oracle.connect(random).changeFees(newFees)).to.be.revertedWith(
-          "Ownable: caller is not the owner"
-        );
+        await expect(
+          oracle.connect(random).changeFees(newFees)
+        ).to.be.revertedWith("Ownable: caller is not the owner");
       });
     });
   });
