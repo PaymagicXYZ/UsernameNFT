@@ -20,13 +20,6 @@ contract UsernameController is Ownable {
     error NameAlreadyActiveError();
     error OnlyNFTOwnerError();
 
-    modifier onlyNFTOwner(uint256 tokenId) {
-        if (msg.sender != usernameNFT.ownerOf(tokenId)) {
-            revert OnlyNFTOwnerError();
-        }
-        _;
-    }
-
     constructor(Oracle _oracle, UsernameNFT _usernameNFT) {
         oracle = _oracle;
         usernameNFT = _usernameNFT;
