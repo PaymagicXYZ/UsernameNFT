@@ -507,9 +507,7 @@ describe("UsernameNFT", function () {
         //parse the string to JSON
         const tokenURIJSON = JSON.parse(tokenURIString);
 
-        expect(tokenURIJSON.name).to.equal(
-          ".zkevm Username NFT #37965850388819898014548320000627034371487626544378754384039597861099344279940"
-        );
+        expect(tokenURIJSON.name).to.equal(".zkevm Username testname.evm");
       });
       it("Should revert if tokenId does not exist", async () => {
         const { usernameNFT, owner, addr1 } = await loadFixture(

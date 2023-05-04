@@ -94,6 +94,10 @@ contract UsernameNFT is ERC721, Ownable {
         controller = UsernameController(_controller);
     }
 
+    // ────────────────────────────────────────────────────────────────────────────────
+    // Token management functions:
+    // ────────────────────────────────────────────────────────────────────────────────
+
     /**
      * @notice Mints a new NFT for a given name if it's available.
      * @param to The address of the user who will own the NFT.
@@ -154,6 +158,40 @@ contract UsernameNFT is ERC721, Ownable {
         emit TokenDataUpdated(data.resolveAddress, data.name, tokenId);
     }
 
+    // ────────────────────────────────────────────────────────────────────────────────
+    // Name and address resolution functions:
+    // ────────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * @notice Returns the resolved address for a given username.
+     * @param name The username to be resolved.
+     * @return address The resolved address of the username.
+     * @dev This function returns the resolved address for a given username if it is registered and not expired.
+     * Otherwise, it returns the zero address.
+     */
+    function resolveName(string memory name) external view returns (address) {
+        uint256 tokenId = nameToTokenId(name);
+        if (!_exists(tokenId) || isExpired(tokenId)) {
+            return address(0);
+        }
+        return tokenData[tokenId].resolveAddress;
+    }
+
+    /**
+     * @notice Returns the username for a given resolved address.
+     * @param addr The owner address to be resolved.
+     * @return string memory The username associated with the resolved address.
+     * @dev This function returns the username associated with a given resolved address if it is registered and not expired.
+     * Otherwise, it returns an empty string.
+     */
+    function resolveAddress(address addr) public view returns (string memory) {
+        uint256 tokenId = primaryNameTokenId[addr];
+        if (isExpired(tokenId)) {
+            return "";
+        }
+        return tokenData[tokenId].name;
+    }
+
     /**
      * @notice Converts a given name to its corresponding token ID.
      * @param name The name to be converted.
@@ -163,6 +201,10 @@ contract UsernameNFT is ERC721, Ownable {
     function nameToTokenId(string memory name) public pure returns (uint256) {
         return uint256(keccak256(abi.encodePacked(name)));
     }
+
+    // ────────────────────────────────────────────────────────────────────────────────
+    // Token data update functions:
+    // ────────────────────────────────────────────────────────────────────────────────
 
     /**
      * @notice Updates the primary name for a given resolved address.
@@ -215,35 +257,9 @@ contract UsernameNFT is ERC721, Ownable {
         );
     }
 
-    /**
-     * @notice Returns the resolved address for a given username.
-     * @param name The username to be resolved.
-     * @return address The resolved address of the username.
-     * @dev This function returns the resolved address for a given username if it is registered and not expired.
-     * Otherwise, it returns the zero address.
-     */
-    function resolveName(string memory name) external view returns (address) {
-        uint256 tokenId = nameToTokenId(name);
-        if (!_exists(tokenId) || isExpired(tokenId)) {
-            return address(0);
-        }
-        return tokenData[tokenId].resolveAddress;
-    }
-
-    /**
-     * @notice Returns the username for a given resolved address.
-     * @param addr The owner address to be resolved.
-     * @return string memory The username associated with the resolved address.
-     * @dev This function returns the username associated with a given resolved address if it is registered and not expired.
-     * Otherwise, it returns an empty string.
-     */
-    function resolveAddress(address addr) public view returns (string memory) {
-        uint256 tokenId = primaryNameTokenId[addr];
-        if (isExpired(tokenId)) {
-            return "";
-        }
-        return tokenData[tokenId].name;
-    }
+    // ────────────────────────────────────────────────────────────────────────────────
+    // Token information and utility functions:
+    // ────────────────────────────────────────────────────────────────────────────────
 
     /**
      * @notice Returns the Unix timestamp of when the given tokenId expires.
@@ -291,6 +307,10 @@ contract UsernameNFT is ERC721, Ownable {
     ) public view returns (string memory) {
         return string(abi.encodePacked(tokenData[tokenId].name, ".", domain));
     }
+
+    // ────────────────────────────────────────────────────────────────────────────────
+    // Metadata and SVG generation functions:
+    // ────────────────────────────────────────────────────────────────────────────────
 
     /**
      * @notice Generates an SVG image for a given tokenId.
@@ -360,7 +380,7 @@ contract UsernameNFT is ERC721, Ownable {
             string(
                 abi.encodePacked(
                     '{"name": ".zkevm Username ',
-                    tokenData[tokenId].name,
+                    getDisplayName(tokenId),
                     '", "description": "',
                     description,
                     '", "image": "data:image/svg+xml;base64,',
