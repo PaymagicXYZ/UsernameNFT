@@ -28,26 +28,27 @@ contract UsernameNFT is ERC721, Ownable {
     struct TokenData {
         uint96 mintTimestamp;
         uint96 duration;
-        address resolvedAddress;
+        address resolveAddress;
         string name;
     }
 
     mapping(uint256 => TokenData) public tokenData;
+    mapping(address => uint256[]) private _addressToTokens;
     mapping(address => string) public primaryName;
 
     event NameRegistered(
-        address indexed resolvedAddress,
+        address indexed resolveAddress,
         string name,
         uint256 tokenId
     );
     event TokenDataUpdated(
-        address indexed resolvedAddress,
+        address indexed resolveAddress,
         string name,
         uint256 tokenId
     );
     event ResolveAddressUpdated(
-        address indexed oldResolvedAddress,
-        address indexed newResolvedAddress,
+        address indexed oldResolveAddress,
+        address indexed newResolveAddress,
         string name,
         uint256 tokenId
     );
@@ -97,18 +98,24 @@ contract UsernameNFT is ERC721, Ownable {
         uint96 duration
     ) external onlyController returns (uint256) {
         uint256 tokenId = nameToTokenId(name);
-        if (!isExpired(tokenId)) {
+        if (_exists(tokenId) && !isExpired(tokenId)) {
             revert NameAlreadyRegisteredError();
         }
+
+        if (_exists(tokenId)) {
+            _burn(tokenId);
+        }
+
         totalSupply++;
         _safeMint(to, tokenId);
         tokenData[tokenId] = TokenData({
-            resolvedAddress: to,
+            resolveAddress: to,
             mintTimestamp: uint96(block.timestamp),
             duration: duration,
             name: name
         });
-        primaryName[msg.sender] = name;
+        primaryName[to] = name;
+        _addressToTokens[to].push(tokenId);
         emit NameRegistered(to, name, tokenId);
         return tokenId;
     }
@@ -125,12 +132,12 @@ contract UsernameNFT is ERC721, Ownable {
         TokenData memory data
     ) external onlyController {
         tokenData[tokenId] = data;
-        if (data.resolvedAddress == address(0)) {
+        if (data.resolveAddress == address(0)) {
             revert ZeroAddressNotAvailableError();
         }
         emit TokenDataUpdated(
-            data.resolvedAddress,
-            primaryName[data.resolvedAddress],
+            data.resolveAddress,
+            primaryName[data.resolveAddress],
             tokenId
         );
     }
@@ -148,27 +155,47 @@ contract UsernameNFT is ERC721, Ownable {
         if (ownerOf(tokenId) != msg.sender) {
             revert OnlyNFTOwnerError();
         }
-        primaryName[tokenData[tokenId].resolvedAddress] = name;
+        primaryName[msg.sender] = name;
     }
 
     /**
      * @notice Updates the resolved address for a given NFT.
      * @param tokenId The token ID of the NFT to be updated.
-     * @param newResolvedAddress The new resolved address.
+     * @param newResolveAddress The new resolved address.
      * @dev This function can only be called by the owner of the NFT. It updates the resolved address
      * for the given tokenId with the provided newResolvedAddress.
      */
     function updateResolveAddress(
         uint256 tokenId,
-        address newResolvedAddress
+        address newResolveAddress
     ) external onlyNFTOwner(tokenId) {
-        TokenData storage data = tokenData[tokenId];
-        address oldResolvedAddress = data.resolvedAddress;
-        tokenData[tokenId].resolvedAddress = newResolvedAddress;
+        address oldResolveAddress = tokenData[tokenId].resolveAddress;
+        tokenData[tokenId].resolveAddress = newResolveAddress;
+
+        // Remove tokenId from old resolve address
+        uint256 indexToRemove;
+        for (
+            uint256 i = 0;
+            i < _addressToTokens[oldResolveAddress].length;
+            i++
+        ) {
+            if (_addressToTokens[oldResolveAddress][i] == tokenId) {
+                indexToRemove = i;
+                break;
+            }
+        }
+        _addressToTokens[oldResolveAddress][indexToRemove] = _addressToTokens[
+            oldResolveAddress
+        ][_addressToTokens[oldResolveAddress].length - 1];
+        _addressToTokens[oldResolveAddress].pop();
+
+        // Add tokenId to new resolve address
+        _addressToTokens[newResolveAddress].push(tokenId);
+
         emit ResolveAddressUpdated(
-            oldResolvedAddress,
-            newResolvedAddress,
-            primaryName[oldResolvedAddress],
+            oldResolveAddress,
+            newResolveAddress,
+            primaryName[oldResolveAddress],
             tokenId
         );
     }
@@ -182,7 +209,7 @@ contract UsernameNFT is ERC721, Ownable {
      */
     function resolveName(string memory name) external view returns (address) {
         uint256 tokenId = nameToTokenId(name);
-        return tokenData[tokenId].resolvedAddress;
+        return tokenData[tokenId].resolveAddress;
     }
 
     /**
@@ -240,9 +267,24 @@ contract UsernameNFT is ERC721, Ownable {
     function getDisplayName(
         uint256 tokenId
     ) public view returns (string memory) {
-        address addr = tokenData[tokenId].resolvedAddress;
-        string memory name = resolveAddress(addr);
+        string memory name = tokenData[tokenId].name;
         return string(abi.encodePacked(name, ".", domain));
+    }
+
+    /**
+     * @notice Overrides the _transfer function to update the resolveAddress upon transfer.
+     * @param from The address of the current owner of the NFT.
+     * @param to The address of the new owner of the NFT.
+     * @param tokenId The token ID of the NFT.
+     * @dev This function updates the resolveAddress of the tokenId to the new owner's address upon transfer.
+     */
+    function _transfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override {
+        super._transfer(from, to, tokenId);
+        tokenData[tokenId].resolveAddress = to;
     }
 
     /**
@@ -278,7 +320,7 @@ contract UsernameNFT is ERC721, Ownable {
             bytes(
                 string(
                     abi.encodePacked(
-                        '{"name": "Username NFT #',
+                        '{"name": ".zkevm Username NFT #',
                         LibString.toString(tokenId),
                         '", "description": "',
                         description,
@@ -287,9 +329,9 @@ contract UsernameNFT is ERC721, Ownable {
                         '", "attributes": [{"trait_type": "tokenId", "value": "',
                         LibString.toString(tokenId),
                         '"}, {"trait_type": "name", "value": "',
-                        resolveAddress(tokenData[tokenId].resolvedAddress),
+                        getDisplayName(tokenId),
                         '"}, {"trait_type": "resolvedAddress", "value": "',
-                        tokenData[tokenId].resolvedAddress,
+                        tokenData[tokenId].resolveAddress,
                         '"}, {"trait_type": "expiresAt", "value": "',
                         LibString.toString(nameExpires(tokenId)),
                         '"}]',
