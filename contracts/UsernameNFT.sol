@@ -208,7 +208,7 @@ contract UsernameNFT is ERC721, Ownable {
 
     /**
      * @notice Updates the primary name for a given resolved address.
-     * @param tokenId The token ID of the NFT to be updated.
+     * @param tokenId The token ID to be the primary name of the resolved address.
      * @dev This function can only be called by resolved address of the NFT. It updates the primary name
      * for the given resolveAddress with the provided tokenId.
      */
