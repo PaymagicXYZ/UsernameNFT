@@ -22,7 +22,7 @@ contract Oracle is Ownable {
     constructor() {
         yearlyUsernameFees = YearlyUsernameFees({
             lengthThree: 0.32 ether,
-            lengthFour: 0.8 ether,
+            lengthFour: 0.08 ether,
             lengthFiveOrMore: 0.0025 ether
         });
     }

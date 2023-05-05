@@ -23,7 +23,7 @@ describe("Oracle", function () {
 
         const fees = await oracle.yearlyUsernameFees();
         expect(fees.lengthThree).to.equal(ethers.utils.parseEther("0.32"));
-        expect(fees.lengthFour).to.equal(ethers.utils.parseEther("0.8"));
+        expect(fees.lengthFour).to.equal(ethers.utils.parseEther("0.08"));
         expect(fees.lengthFiveOrMore).to.equal(
           ethers.utils.parseEther("0.0025")
         );
@@ -43,7 +43,7 @@ describe("Oracle", function () {
         expect(priceThree).to.equal(parseEther("0.64"));
 
         const priceFour = await oracle.price(4, SECONDS_PER_YEAR * 4.5);
-        expect(priceFour).to.equal(parseEther("3.6"));
+        expect(priceFour).to.equal(parseEther("0.36"));
 
         const priceFive = await oracle.price(5, SECONDS_PER_YEAR * 5.75);
         expect(priceFive).to.equal(parseEther("0.014375"));
