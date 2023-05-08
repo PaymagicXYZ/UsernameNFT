@@ -21,7 +21,7 @@ describe("UsernameController", function () {
     const [owner, addr1, addr2] = await ethers.getSigners();
 
     const Oracle = new Oracle__factory(owner);
-    const oracle = await Oracle.deploy(price);
+    const oracle = await Oracle.deploy();
 
     const UsernameNFT = new UsernameNFT__factory(owner);
     const usernameNFT = await UsernameNFT.deploy("UsernameNFT", "UNFT", "evm");
@@ -51,27 +51,53 @@ describe("UsernameController", function () {
           await loadFixture(deployDummyController);
 
         const name = "testuser";
-        const durationInYears = 2;
+        const duration = 2 * SECONDS_PER_YEAR;
 
-        const price = await oracle.price(name.length, durationInYears);
+        const price = await oracle.price(name.length, duration);
 
-        await usernameController.register(
-          name,
-          addr1.address,
-          durationInYears,
-          {
-            value: price,
-          }
-        );
+        await usernameController.register(name, duration, {
+          value: price,
+        });
         const tokenId = await usernameNFT.nameToTokenId(name);
 
         expect(await usernameNFT.ownerOf(tokenId)).to.equal(owner.address);
 
-        const resolvedName = await usernameNFT.resolvedAddressToName(
-          addr1.address
-        );
+        const tokenData = await usernameNFT.tokenData(tokenId);
 
-        expect(resolvedName).to.equal(name);
+        expect(tokenData.name).to.equal(name);
+      });
+      it("Should register a new username and mint an NFT for a previously expired username", async function () {
+        const { oracle, usernameNFT, usernameController, owner, addr1 } =
+          await loadFixture(deployDummyController);
+
+        const name = "testuser";
+        const duration = 2 * SECONDS_PER_YEAR;
+
+        const price = await oracle.price(name.length, duration);
+
+        await usernameController.register(name, duration, {
+          value: price,
+        });
+        const tokenId = await usernameNFT.nameToTokenId(name);
+
+        expect(await usernameNFT.ownerOf(tokenId)).to.equal(owner.address);
+
+        const tokenData = await usernameNFT.tokenData(tokenId);
+
+        expect(tokenData.name).to.equal(name);
+
+        const blocktimestamp = await getBlockTimestamp();
+        const totalSeconds = duration + 1;
+        await setBlockTimestamp(totalSeconds + blocktimestamp);
+
+        expect(await usernameNFT.isExpired(tokenId)).to.equal(true);
+
+        await usernameController.connect(addr1).register(name, duration, {
+          value: price,
+        });
+
+        expect(await usernameNFT.ownerOf(tokenId)).to.equal(addr1.address);
+        expect(await usernameNFT.isExpired(tokenId)).to.equal(false);
       });
       it("Should fail if not enough Ether is sent", async function () {
         const { oracle, usernameController, addr1 } = await loadFixture(
@@ -79,16 +105,16 @@ describe("UsernameController", function () {
         );
 
         const name = "testuser";
-        const durationInYears = 2;
+        const duration = 2 * SECONDS_PER_YEAR;
 
-        const actualPrice = await oracle.price(name.length, durationInYears);
+        const actualPrice = await oracle.price(name.length, duration);
 
-        const attemptedPrice = ethers.utils.parseEther("0.1");
+        const attemptedPrice = ethers.utils.parseEther("0.00001");
 
         expect(attemptedPrice).to.be.lt(actualPrice);
 
         await expect(
-          usernameController.register(name, addr1.address, durationInYears, {
+          usernameController.register(name, duration, {
             value: attemptedPrice,
           })
         ).to.be.revertedWithCustomError(
@@ -102,71 +128,44 @@ describe("UsernameController", function () {
         const { usernameController, addr1, usernameNFT, oracle } =
           await loadFixture(deployDummyController);
         const name = "testuser";
-        const durationInYears = 2;
-        const AdditionalDurationInYears = 1;
-
-        const registrationPrice = await oracle.price(
-          name.length,
-          durationInYears
-        );
-        await usernameController.register(
-          name,
-          addr1.address,
-          durationInYears,
-          {
-            value: registrationPrice,
-          }
-        );
+        const duration = 2 * SECONDS_PER_YEAR;
+        const additionalDuration = 1 * SECONDS_PER_YEAR;
+        const registrationPrice = await oracle.price(name.length, duration);
+        await usernameController.register(name, duration, {
+          value: registrationPrice,
+        });
         const tokenId = await usernameNFT.nameToTokenId(name);
 
         const renewalPrice = await oracle.price(
           name.length,
-          AdditionalDurationInYears
+          additionalDuration
         );
-        await usernameController.renew(tokenId, AdditionalDurationInYears, {
+        await usernameController.renew(tokenId, additionalDuration, {
           value: renewalPrice,
         });
         const tokenData = await usernameNFT.tokenData(tokenId);
-        expect(tokenData.duration).to.equal(
-          (durationInYears + AdditionalDurationInYears) * SECONDS_PER_YEAR
-        );
+        expect(tokenData.duration).to.equal(duration + additionalDuration);
       });
       it("Should renew the registration of an expired username given not already taken", async function () {
         const { usernameController, addr1, usernameNFT, oracle } =
           await loadFixture(deployDummyController);
         const name = "testuser";
-        const durationInYears = 2;
-        const newDurationInYears = 1;
-
-        const registrationPrice = await oracle.price(
-          name.length,
-          durationInYears
-        );
-
-        const renewalPrice = await oracle.price(
-          name.length,
-          newDurationInYears
-        );
-
-        await usernameController.register(
-          name,
-          addr1.address,
-          durationInYears,
-          {
-            value: registrationPrice,
-          }
-        );
+        const duration = 2 * SECONDS_PER_YEAR;
+        const newDuration = 1 * SECONDS_PER_YEAR;
+        const registrationPrice = await oracle.price(name.length, duration);
+        const renewalPrice = await oracle.price(name.length, newDuration);
+        await usernameController.register(name, duration, {
+          value: registrationPrice,
+        });
         const blocktimestamp = await getBlockTimestamp();
-        const totalSeconds = durationInYears * SECONDS_PER_YEAR;
+        const totalSeconds = duration * SECONDS_PER_YEAR;
         await setBlockTimestamp(blocktimestamp + 1 + totalSeconds);
         const tokenId = await usernameNFT.nameToTokenId(name);
-        await usernameController.renew(tokenId, newDurationInYears, {
+        await usernameController.renew(tokenId, newDuration, {
           value: renewalPrice,
         });
         const tokenData = await usernameNFT.tokenData(tokenId);
-        expect(tokenData.duration).to.equal(
-          newDurationInYears * SECONDS_PER_YEAR
-        );
+        expect(tokenData.duration).to.equal(newDuration);
       });
       it("Should not renew the registration of an expired username given its already taken", async function () {
         const { usernameController, addr1, addr2, usernameNFT, oracle } =
@@ -174,41 +173,35 @@ describe("UsernameController", function () {
         const name = "testuser";
         const durationInYears = 2;
         const additionalDurationInYears = 1;
-
         const registrationPrice = await oracle.price(
           name.length,
           durationInYears
         );
-
         const renewalPrice = await oracle.price(
           name.length,
           additionalDurationInYears
         );
-
-        await usernameController.register(
-          name,
-          addr1.address,
-          durationInYears,
-          {
+        await usernameController
+          .connect(addr1)
+          .register(name, durationInYears, {
             value: registrationPrice,
-          }
-        );
+          });
         const tokenId = await usernameNFT.nameToTokenId(name);
         const blocktimestamp = await getBlockTimestamp();
         const totalSeconds = durationInYears * SECONDS_PER_YEAR;
         await setBlockTimestamp(blocktimestamp + totalSeconds + 1);
         await usernameController
           .connect(addr2)
-          .register(name, addr1.address, durationInYears, {
+          .register(name, durationInYears, {
             value: registrationPrice,
           });
-        expect(
+        await expect(
           usernameController.renew(tokenId, additionalDurationInYears, {
             value: renewalPrice,
           })
         ).to.be.revertedWithCustomError(
           usernameController,
-          "NameAlreadyActiveError"
+          "NotTokenOwnerOrNameTakenError"
         );
       });
       it("Should not renew if not called by token owner", async function () {
@@ -217,30 +210,22 @@ describe("UsernameController", function () {
         const name = "testuser";
         const durationInYears = 2;
         const additionalDurationInYears = 2;
-
         const registrationPrice = await oracle.price(
           name.length,
           durationInYears
         );
-
         const renewalPrice = await oracle.price(
           name.length,
           additionalDurationInYears
         );
-
-        await usernameController.register(
-          name,
-          addr1.address,
-          durationInYears,
-          {
-            value: registrationPrice,
-          }
-        );
+        await usernameController.register(name, durationInYears, {
+          value: registrationPrice,
+        });
         const blocktimestamp = await getBlockTimestamp();
         const totalSeconds = durationInYears * SECONDS_PER_YEAR;
         await setBlockTimestamp(blocktimestamp + totalSeconds + 1);
         const tokenId = await usernameNFT.nameToTokenId(name);
-        expect(
+        await expect(
           usernameController
             .connect(addr1)
             .renew(tokenId, additionalDurationInYears, {
@@ -248,33 +233,24 @@ describe("UsernameController", function () {
             })
         ).to.be.revertedWithCustomError(
           usernameController,
-          "NotTokenOwnerError"
+          "NotTokenOwnerOrNameTakenError"
         );
       });
       it("Should fail if not enough Ether is sent", async function () {
         const { oracle, usernameNFT, usernameController, owner, addr1 } =
           await loadFixture(deployDummyController);
         const name = "testuser";
-        const durationInYears = 2;
-        const additionalDurationInYears = 2;
-
-        const registrationPrice = await oracle.price(
-          name.length,
-          durationInYears
-        );
-
-        await usernameController
-          .connect(owner)
-          .register(name, addr1.address, durationInYears, {
-            value: registrationPrice,
-          });
+        const duration = 2 * SECONDS_PER_YEAR;
+        const additionalDuration = 2 * SECONDS_PER_YEAR;
+        const registrationPrice = await oracle.price(name.length, duration);
+        await usernameController.connect(owner).register(name, duration, {
+          value: registrationPrice,
+        });
         const tokenId = await usernameNFT.nameToTokenId(name);
         await expect(
-          usernameController
-            .connect(owner)
-            .renew(tokenId, additionalDurationInYears, {
-              value: parseEther("0.001"),
-            })
+          usernameController.connect(owner).renew(tokenId, additionalDuration, {
+            value: parseEther("0.0000000001"),
+          })
         ).to.be.revertedWithCustomError(
           usernameController,
           "InsufficientNativeError"
@@ -288,28 +264,18 @@ describe("UsernameController", function () {
         );
         const name = "testuser";
         const durationInYears = 2;
-
         const registrationPrice = await oracle.price(
           name.length,
           durationInYears
         );
-
-        await usernameController.register(
-          name,
-          addr1.address,
-          durationInYears,
-          {
-            value: registrationPrice,
-          }
-        );
-
+        await usernameController.register(name, durationInYears, {
+          value: registrationPrice,
+        });
         const initialBalance = await owner.getBalance();
         const contractBalance = await ethers.provider.getBalance(
           usernameController.address
         );
-
         await usernameController.connect(addr1).withdraw();
-
         const finalBalance = await owner.getBalance();
         expect(finalBalance).to.equal(initialBalance.add(contractBalance));
       });
@@ -317,7 +283,6 @@ describe("UsernameController", function () {
     describe("SetOracle", function () {
       it("Should allow owner to set a new Oracle instance", async () => {
         const { usernameController } = await loadFixture(deployDummyController);
-
         const randomAddress = getRandomAddress();
         await usernameController.setOracle(randomAddress);
         expect(await usernameController.oracle()).to.equal(randomAddress);
@@ -326,11 +291,10 @@ describe("UsernameController", function () {
         const { usernameController, addr1 } = await loadFixture(
           deployDummyController
         );
-
         const randomAddress = getRandomAddress();
-        expect(
+        await expect(
           usernameController.connect(addr1).setOracle(randomAddress)
-        ).to.revertedWith("Ownable: new owner is the zero address");
+        ).to.revertedWith("Ownable: caller is not the owner");
       });
     });
     describe("Withdraw", function () {
@@ -338,9 +302,7 @@ describe("UsernameController", function () {
         const { usernameController, oracle } = await loadFixture(
           deployDummyController
         );
-
         await usernameController.transferOwnership(oracle.address);
-
         await expect(
           usernameController.withdraw()
         ).to.be.revertedWithCustomError(

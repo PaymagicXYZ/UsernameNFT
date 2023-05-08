@@ -6,9 +6,11 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.2",
     "abdk-libraries-solidity": "^3.2.0",
+    "dotenv": "^16.0.3",
     "hardhat": "^2.13.0",
     "hardhat-deploy": "^0.11.26",
-    "hardhat-deploy-ethers": "^0.3.0-beta.13"
+    "hardhat-deploy-ethers": "^0.3.0-beta.13",
+    "solady": "^0.0.90"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
@@ -25,13 +27,11 @@
     "@types/node": ">=12.0.0",
     "chai": "^4.2.0",
     "ethers": "^5.4.7",
+    "hardhat-contract-sizer": "^2.8.0",
     "hardhat-gas-reporter": "^1.0.8",
     "solidity-coverage": "^0.8.0",
     "ts-node": ">=8.0.0",
     "typechain": "^8.1.0",
     "typescript": ">=4.5.0"
-  },
-  "scripts": {
-    "pricing": "hardhat run scripts/deploy_and_print_pricing.ts"
   }
 }

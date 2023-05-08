@@ -4,66 +4,80 @@ import { parseEther, formatEther } from "ethers/lib/utils";
 import { Oracle__factory } from "../typechain-types";
 import { ethers } from "hardhat";
 import { BigNumber } from "ethers";
+import { SECONDS_PER_YEAR } from "../constants";
 
 describe("Oracle", function () {
   async function deployOracle() {
-    const price = parseEther("0.5");
-
     const [owner, random] = await ethers.getSigners();
 
     const Oracle = new Oracle__factory(owner);
-    const oracle = await Oracle.deploy(price);
+    const oracle = await Oracle.deploy();
 
-    return { oracle, random, price };
+    return { oracle, random };
   }
 
   describe("Oracle", function () {
     describe("Price", function () {
-      it("Should set the correct base price on deployment", async () => {
+      it("Should have correct initial fees", async () => {
         const { oracle } = await loadFixture(deployOracle);
 
-        const basePrice = await oracle.basePrice();
-        expect(basePrice).to.equal(parseEther("0.5"));
-      });
-      it("Should return the base price if username length is 3", async () => {
-        const { oracle } = await loadFixture(deployOracle);
-
-        const price = await oracle.price(3, 1);
-        expect(price).to.equal(await oracle.basePrice());
+        const fees = await oracle.yearlyUsernameFees();
+        expect(fees.lengthThree).to.equal(ethers.utils.parseEther("0.32"));
+        expect(fees.lengthFour).to.equal(ethers.utils.parseEther("0.08"));
+        expect(fees.lengthFiveOrMore).to.equal(
+          ethers.utils.parseEther("0.0025")
+        );
       });
       it("Should revert if username length is less than 3", async () => {
         const { oracle } = await loadFixture(deployOracle);
 
-        await expect(oracle.price(2, 1)).to.be.revertedWithCustomError(
+        await expect(oracle.price(2, 31557600)).to.be.revertedWithCustomError(
           oracle,
-          "UsernameTooShortError"
+          "InvalidUsernameLength"
         );
       });
-      it("Should return correct price inversely proportional to username length", async function () {
+      it("Should calculate price correctly", async () => {
         const { oracle } = await loadFixture(deployOracle);
 
-        const price3 = await oracle.price(3, 1);
-        const price4 = await oracle.price(4, 1);
-        const price5 = await oracle.price(5, 1);
+        const priceThree = await oracle.price(3, SECONDS_PER_YEAR * 2);
+        expect(priceThree).to.equal(parseEther("0.64"));
 
-        expect(price3).to.be.gt(price4);
-        expect(price4).to.be.gt(price5);
+        const priceFour = await oracle.price(4, SECONDS_PER_YEAR * 4.5);
+        expect(priceFour).to.equal(parseEther("0.36"));
+
+        const priceFive = await oracle.price(5, SECONDS_PER_YEAR * 5.75);
+        expect(priceFive).to.equal(parseEther("0.014375"));
+
+        const priceSix = await oracle.price(3, SECONDS_PER_YEAR * 10);
+        expect(priceSix).to.equal(parseEther("3.2"));
       });
     });
-    describe("SetBasePrice", function () {
-      it("Should allow owner to set a new base price", async function () {
-        const { oracle, price } = await loadFixture(deployOracle);
-        const newPrice = parseEther("2");
-        const tx = await oracle.setBasePrice(newPrice);
-        expect(await oracle.basePrice()).to.equal(newPrice);
-        expect(tx).to.emit(oracle, "PriceChanged").withArgs(price, newPrice);
+    describe("ChangeFees", function () {
+      it("Should change fees correctly and emit event when called by owner", async () => {
+        const { oracle } = await loadFixture(deployOracle);
+        const oldFees = await oracle.yearlyUsernameFees();
+        const newFees = {
+          lengthThree: parseEther("0.4"),
+          lengthFour: parseEther("1"),
+          lengthFiveOrMore: parseEther("0.003"),
+        };
+        const tx = await oracle.changeFees(newFees);
+        expect(tx).to.emit(oracle, "FeesChanged").withArgs(oldFees, newFees);
+        const fees = await oracle.yearlyUsernameFees();
+        expect(fees.lengthThree).to.equal(newFees.lengthThree);
+        expect(fees.lengthFour).to.equal(newFees.lengthFour);
+        expect(fees.lengthFiveOrMore).to.equal(newFees.lengthFiveOrMore);
       });
-      it("Should not allow non-owner to set a new base price", async function () {
-        const { oracle, price, random } = await loadFixture(deployOracle);
-        const newPrice = parseEther("2");
-        expect(oracle.connect(random).setBasePrice(newPrice)).to.revertedWith(
-          "Ownable: caller is not the owner"
-        );
+      it("Should fail if called by non-owner", async () => {
+        const { oracle, random } = await loadFixture(deployOracle);
+        const newFees = {
+          lengthThree: parseEther("0.4"),
+          lengthFour: parseEther("1"),
+          lengthFiveOrMore: parseEther("0.003"),
+        };
+        await expect(
+          oracle.connect(random).changeFees(newFees)
+        ).to.be.revertedWith("Ownable: caller is not the owner");
       });
     });
   });
