@@ -1,0 +1,342 @@
+{
+  "address": "0x7C518447180e3bAD26FD8C35dD12b5111543338C",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidUsernameLength",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "lengthThree",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "lengthFour",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "lengthFiveOrMore",
+              "type": "uint64"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct Oracle.YearlyUsernameFees",
+          "name": "oldFees",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "lengthThree",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "lengthFour",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "lengthFiveOrMore",
+              "type": "uint64"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct Oracle.YearlyUsernameFees",
+          "name": "newFees",
+          "type": "tuple"
+        }
+      ],
+      "name": "FeesUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint64",
+              "name": "lengthThree",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "lengthFour",
+              "type": "uint64"
+            },
+            {
+              "internalType": "uint64",
+              "name": "lengthFiveOrMore",
+              "type": "uint64"
+            }
+          ],
+          "internalType": "struct Oracle.YearlyUsernameFees",
+          "name": "newFees",
+          "type": "tuple"
+        }
+      ],
+      "name": "changeFees",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint8",
+          "name": "usernameLength",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint128",
+          "name": "durationInSeconds",
+          "type": "uint128"
+        }
+      ],
+      "name": "price",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "yearlyUsernameFees",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "lengthThree",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "lengthFour",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "lengthFiveOrMore",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x4927fdcd51a9e6074bcc126a5f2077de1160f7f59b5a5ab8d596b6c8aaaadc45",
+  "receipt": {
+    "to": null,
+    "from": "0xd0F5181499a9967b5cF7142dF003232E94ef22cE",
+    "contractAddress": "0x7C518447180e3bAD26FD8C35dD12b5111543338C",
+    "transactionIndex": 35,
+    "gasUsed": "424113",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000800000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000020000000000000200000800004000000000000000000000000000440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000200000000000080000000000000000000000",
+    "blockHash": "0x7126028add040143e89a454934c3bd68e6d5f4db9321aa10dcde3fb3838ae414",
+    "transactionHash": "0x4927fdcd51a9e6074bcc126a5f2077de1160f7f59b5a5ab8d596b6c8aaaadc45",
+    "logs": [
+      {
+        "transactionIndex": 35,
+        "blockNumber": 651103,
+        "transactionHash": "0x4927fdcd51a9e6074bcc126a5f2077de1160f7f59b5a5ab8d596b6c8aaaadc45",
+        "address": "0x7C518447180e3bAD26FD8C35dD12b5111543338C",
+        "topics": [
+          "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x000000000000000000000000d0f5181499a9967b5cf7142df003232e94ef22ce"
+        ],
+        "data": "0x",
+        "logIndex": 83,
+        "blockHash": "0x7126028add040143e89a454934c3bd68e6d5f4db9321aa10dcde3fb3838ae414"
+      }
+    ],
+    "blockNumber": 651103,
+    "cumulativeGasUsed": "6050194",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "80dc3b733b98cf23c2d489e581966663",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.19+commit.7dd6d404\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"InvalidUsernameLength\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"components\":[{\"internalType\":\"uint64\",\"name\":\"lengthThree\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lengthFour\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lengthFiveOrMore\",\"type\":\"uint64\"}],\"indexed\":false,\"internalType\":\"struct Oracle.YearlyUsernameFees\",\"name\":\"oldFees\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"uint64\",\"name\":\"lengthThree\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lengthFour\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lengthFiveOrMore\",\"type\":\"uint64\"}],\"indexed\":false,\"internalType\":\"struct Oracle.YearlyUsernameFees\",\"name\":\"newFees\",\"type\":\"tuple\"}],\"name\":\"FeesUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[{\"components\":[{\"internalType\":\"uint64\",\"name\":\"lengthThree\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lengthFour\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lengthFiveOrMore\",\"type\":\"uint64\"}],\"internalType\":\"struct Oracle.YearlyUsernameFees\",\"name\":\"newFees\",\"type\":\"tuple\"}],\"name\":\"changeFees\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint8\",\"name\":\"usernameLength\",\"type\":\"uint8\"},{\"internalType\":\"uint128\",\"name\":\"durationInSeconds\",\"type\":\"uint128\"}],\"name\":\"price\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"yearlyUsernameFees\",\"outputs\":[{\"internalType\":\"uint64\",\"name\":\"lengthThree\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lengthFour\",\"type\":\"uint64\"},{\"internalType\":\"uint64\",\"name\":\"lengthFiveOrMore\",\"type\":\"uint64\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"Oracle contract returns a price set by the oracle contract owner. The owner can change the fee structure. The price is determined by the username length and is multiplied by the duration.\",\"kind\":\"dev\",\"methods\":{\"changeFees((uint64,uint64,uint64))\":{\"details\":\"Emits a FeesUpdated event with the old and new fee structures.Only callable by the contract owner.\",\"params\":{\"newFees\":\"The new fee structure.\"}},\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"price(uint8,uint128)\":{\"details\":\"Reverts if the username length is less than 3.\",\"params\":{\"durationInSeconds\":\"The desired duration in seconds.\",\"usernameLength\":\"The length of the username.\"},\"returns\":{\"_0\":\"The price in wei.\"}},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.\"},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"}},\"title\":\"Oracle\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"changeFees((uint64,uint64,uint64))\":{\"notice\":\"Change the fee structure for username pricing.\"},\"price(uint8,uint128)\":{\"notice\":\"Calculate the price for a username based on its length and the desired duration.\"}},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/Oracle.sol\":\"Oracle\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":9999},\"remappings\":[],\"viaIR\":true},\"sources\":{\"@openzeppelin/contracts/access/Ownable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.7.0) (access/Ownable.sol)\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"../utils/Context.sol\\\";\\n\\n/**\\n * @dev Contract module which provides a basic access control mechanism, where\\n * there is an account (an owner) that can be granted exclusive access to\\n * specific functions.\\n *\\n * By default, the owner account will be the one that deploys the contract. This\\n * can later be changed with {transferOwnership}.\\n *\\n * This module is used through inheritance. It will make available the modifier\\n * `onlyOwner`, which can be applied to your functions to restrict their use to\\n * the owner.\\n */\\nabstract contract Ownable is Context {\\n    address private _owner;\\n\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    /**\\n     * @dev Initializes the contract setting the deployer as the initial owner.\\n     */\\n    constructor() {\\n        _transferOwnership(_msgSender());\\n    }\\n\\n    /**\\n     * @dev Throws if called by any account other than the owner.\\n     */\\n    modifier onlyOwner() {\\n        _checkOwner();\\n        _;\\n    }\\n\\n    /**\\n     * @dev Returns the address of the current owner.\\n     */\\n    function owner() public view virtual returns (address) {\\n        return _owner;\\n    }\\n\\n    /**\\n     * @dev Throws if the sender is not the owner.\\n     */\\n    function _checkOwner() internal view virtual {\\n        require(owner() == _msgSender(), \\\"Ownable: caller is not the owner\\\");\\n    }\\n\\n    /**\\n     * @dev Leaves the contract without owner. It will not be possible to call\\n     * `onlyOwner` functions anymore. Can only be called by the current owner.\\n     *\\n     * NOTE: Renouncing ownership will leave the contract without an owner,\\n     * thereby removing any functionality that is only available to the owner.\\n     */\\n    function renounceOwnership() public virtual onlyOwner {\\n        _transferOwnership(address(0));\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Can only be called by the current owner.\\n     */\\n    function transferOwnership(address newOwner) public virtual onlyOwner {\\n        require(newOwner != address(0), \\\"Ownable: new owner is the zero address\\\");\\n        _transferOwnership(newOwner);\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Internal function without access restriction.\\n     */\\n    function _transferOwnership(address newOwner) internal virtual {\\n        address oldOwner = _owner;\\n        _owner = newOwner;\\n        emit OwnershipTransferred(oldOwner, newOwner);\\n    }\\n}\\n\",\"keccak256\":\"0xa94b34880e3c1b0b931662cb1c09e5dfa6662f31cba80e07c5ee71cd135c9673\",\"license\":\"MIT\"},\"@openzeppelin/contracts/utils/Context.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts v4.4.1 (utils/Context.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Provides information about the current execution context, including the\\n * sender of the transaction and its data. While these are generally available\\n * via msg.sender and msg.data, they should not be accessed in such a direct\\n * manner, since when dealing with meta-transactions the account sending and\\n * paying for execution may not be the actual sender (as far as an application\\n * is concerned).\\n *\\n * This contract is only required for intermediate, library-like contracts.\\n */\\nabstract contract Context {\\n    function _msgSender() internal view virtual returns (address) {\\n        return msg.sender;\\n    }\\n\\n    function _msgData() internal view virtual returns (bytes calldata) {\\n        return msg.data;\\n    }\\n}\\n\",\"keccak256\":\"0xe2e337e6dde9ef6b680e07338c493ebea1b5fd09b43424112868e9cc1706bca7\",\"license\":\"MIT\"},\"contracts/Oracle.sol\":{\"content\":\"pragma solidity ^0.8.0;\\n\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\n\\n/**\\n * @title Oracle\\n * @dev Oracle contract returns a price set by the oracle contract owner.\\n * The owner can change the fee structure. The price is determined by the username length and is multiplied by the duration.\\n */\\ncontract Oracle is Ownable {\\n    uint32 constant SECONDS_PER_YEAR = 31_536_000;\\n    uint64 constant FACTOR = 10 ** 18;\\n\\n    struct YearlyUsernameFees {\\n        uint64 lengthThree;\\n        uint64 lengthFour;\\n        uint64 lengthFiveOrMore;\\n    }\\n\\n    YearlyUsernameFees public yearlyUsernameFees;\\n\\n    constructor() {\\n        yearlyUsernameFees = YearlyUsernameFees({\\n            lengthThree: 0.32 ether,\\n            lengthFour: 0.08 ether,\\n            lengthFiveOrMore: 0.0025 ether\\n        });\\n    }\\n\\n    event FeesUpdated(YearlyUsernameFees oldFees, YearlyUsernameFees newFees);\\n\\n    error InvalidUsernameLength();\\n\\n    /**\\n     * @notice Calculate the price for a username based on its length and the desired duration.\\n     * @param usernameLength The length of the username.\\n     * @param durationInSeconds The desired duration in seconds.\\n     * @return The price in wei.\\n     * @dev Reverts if the username length is less than 3.\\n     */\\n    function price(\\n        uint8 usernameLength,\\n        uint128 durationInSeconds\\n    ) external view returns (uint) {\\n        if (usernameLength < 3) {\\n            revert InvalidUsernameLength();\\n        }\\n\\n        uint fee;\\n        if (usernameLength == 3) {\\n            fee = yearlyUsernameFees.lengthThree;\\n        } else if (usernameLength == 4) {\\n            fee = yearlyUsernameFees.lengthFour;\\n        } else {\\n            fee = yearlyUsernameFees.lengthFiveOrMore;\\n        }\\n\\n        uint256 durationInYears = (durationInSeconds * FACTOR) /\\n            SECONDS_PER_YEAR;\\n\\n        return (fee * durationInYears) / FACTOR;\\n    }\\n\\n    /**\\n     * @notice Change the fee structure for username pricing.\\n     * @param newFees The new fee structure.\\n     * @dev Emits a FeesUpdated event with the old and new fee structures.\\n     * @dev Only callable by the contract owner.\\n     */\\n    function changeFees(\\n        YearlyUsernameFees calldata newFees\\n    ) external onlyOwner {\\n        YearlyUsernameFees memory oldFees = yearlyUsernameFees;\\n        yearlyUsernameFees = newFees;\\n        emit FeesUpdated(oldFees, newFees);\\n    }\\n}\\n\",\"keccak256\":\"0x1dd49e4aebfeb78133c56896f3f0725362c1f6032c73b7533368a21476bc22c4\"}},\"version\":1}",
+  "bytecode": "0x6080346100d35760008054336001600160a01b0319821681178355906001600160a01b03167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08380a360608201906001600160401b038211838310176100bf576040828152670470de4df8200000845267011c37937e08000060208501526608e1bc9bf0400084820152600180546001600160c01b0319167608e1bc9bf04000011c37937e0800000470de4df8200000179055516105e190816100d98239f35b634e487b7160e01b81526041600452602490fd5b600080fdfe608060408181526004908136101561001657600080fd5b600092833560e01c9081635f9d23e0146104ef57508063715018a6146104715780638da5cb5b1461043e578063a0083ebd146102db578063a36a821c146101865763f2fde38b1461006657600080fd5b346101825760206003193601126101825781359173ffffffffffffffffffffffffffffffffffffffff9182841680940361017e576100a261052c565b83156100fb5750508254827fffffffffffffffffffffffff00000000000000000000000000000000000000008216178455167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08380a380f35b90602060849251917f08c379a0000000000000000000000000000000000000000000000000000000008352820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f64647265737300000000000000000000000000000000000000000000000000006064820152fd5b8480fd5b8280fd5b5082346102d857816003193601126102d85782359160ff83168093036102d457602435916fffffffffffffffffffffffffffffffff938484168094036102d4578060038792106102ac576003810361027c57505067ffffffffffffffff60015416935b670de0b6b3a7640000809402818116908103610250576301e13380900416938481029481860414901517156102245750602093505191048152f35b806011867f4e487b71000000000000000000000000000000000000000000000000000000006024945252fd5b6024836011897f4e487b7100000000000000000000000000000000000000000000000000000000835252fd5b036102965767ffffffffffffffff600154831c16936101e9565b67ffffffffffffffff60015460801c16936101e9565b5082517f329b7317000000000000000000000000000000000000000000000000000000008152fd5b5080fd5b80fd5b5034610182576060600319360112610182576102f561052c565b805167ffffffffffffffff9190606081018381118282101761041257825260015493838516928383528060208401938688831c1685520191858760801c168352359085821680920361040e57602435958087169384880361040a5760443582811696878203610406577f78e081f102ed205311ff2a8973b1ae23597b24774ae7d43f2136092bf636f4629a60c09a6fffffffffffffffff0000000000000000887fffffffffffffffff00000000000000000000000000000000000000000000000077ffffffffffffffff00000000000000000000000000000000899760801b1694161791881b1617176001558451988952511660208801525116908501526060840152608083015260a0820152a180f35b8b80fd5b8980fd5b8780fd5b6024866041877f4e487b7100000000000000000000000000000000000000000000000000000000835252fd5b8382346102d457816003193601126102d45773ffffffffffffffffffffffffffffffffffffffff60209254169051908152f35b83346102d857806003193601126102d85761048a61052c565b8073ffffffffffffffffffffffffffffffffffffffff81547fffffffffffffffffffffffff000000000000000000000000000000000000000081168355167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08280a380f35b925050346101825782600319360112610182576060925060015467ffffffffffffffff9081811684528181841c16602085015260801c1690820152f35b73ffffffffffffffffffffffffffffffffffffffff60005416330361054d57565b60646040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602060248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152fdfea2646970667358221220b8511ce7d3ac60e92871859b953f72876b0134a992b673c16968347bd30586b764736f6c63430008130033",
+  "deployedBytecode": "0x608060408181526004908136101561001657600080fd5b600092833560e01c9081635f9d23e0146104ef57508063715018a6146104715780638da5cb5b1461043e578063a0083ebd146102db578063a36a821c146101865763f2fde38b1461006657600080fd5b346101825760206003193601126101825781359173ffffffffffffffffffffffffffffffffffffffff9182841680940361017e576100a261052c565b83156100fb5750508254827fffffffffffffffffffffffff00000000000000000000000000000000000000008216178455167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08380a380f35b90602060849251917f08c379a0000000000000000000000000000000000000000000000000000000008352820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f64647265737300000000000000000000000000000000000000000000000000006064820152fd5b8480fd5b8280fd5b5082346102d857816003193601126102d85782359160ff83168093036102d457602435916fffffffffffffffffffffffffffffffff938484168094036102d4578060038792106102ac576003810361027c57505067ffffffffffffffff60015416935b670de0b6b3a7640000809402818116908103610250576301e13380900416938481029481860414901517156102245750602093505191048152f35b806011867f4e487b71000000000000000000000000000000000000000000000000000000006024945252fd5b6024836011897f4e487b7100000000000000000000000000000000000000000000000000000000835252fd5b036102965767ffffffffffffffff600154831c16936101e9565b67ffffffffffffffff60015460801c16936101e9565b5082517f329b7317000000000000000000000000000000000000000000000000000000008152fd5b5080fd5b80fd5b5034610182576060600319360112610182576102f561052c565b805167ffffffffffffffff9190606081018381118282101761041257825260015493838516928383528060208401938688831c1685520191858760801c168352359085821680920361040e57602435958087169384880361040a5760443582811696878203610406577f78e081f102ed205311ff2a8973b1ae23597b24774ae7d43f2136092bf636f4629a60c09a6fffffffffffffffff0000000000000000887fffffffffffffffff00000000000000000000000000000000000000000000000077ffffffffffffffff00000000000000000000000000000000899760801b1694161791881b1617176001558451988952511660208801525116908501526060840152608083015260a0820152a180f35b8b80fd5b8980fd5b8780fd5b6024866041877f4e487b7100000000000000000000000000000000000000000000000000000000835252fd5b8382346102d457816003193601126102d45773ffffffffffffffffffffffffffffffffffffffff60209254169051908152f35b83346102d857806003193601126102d85761048a61052c565b8073ffffffffffffffffffffffffffffffffffffffff81547fffffffffffffffffffffffff000000000000000000000000000000000000000081168355167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e08280a380f35b925050346101825782600319360112610182576060925060015467ffffffffffffffff9081811684528181841c16602085015260801c1690820152f35b73ffffffffffffffffffffffffffffffffffffffff60005416330361054d57565b60646040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152602060248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152fdfea2646970667358221220b8511ce7d3ac60e92871859b953f72876b0134a992b673c16968347bd30586b764736f6c63430008130033",
+  "devdoc": {
+    "details": "Oracle contract returns a price set by the oracle contract owner. The owner can change the fee structure. The price is determined by the username length and is multiplied by the duration.",
+    "kind": "dev",
+    "methods": {
+      "changeFees((uint64,uint64,uint64))": {
+        "details": "Emits a FeesUpdated event with the old and new fee structures.Only callable by the contract owner.",
+        "params": {
+          "newFees": "The new fee structure."
+        }
+      },
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "price(uint8,uint128)": {
+        "details": "Reverts if the username length is less than 3.",
+        "params": {
+          "durationInSeconds": "The desired duration in seconds.",
+          "usernameLength": "The length of the username."
+        },
+        "returns": {
+          "_0": "The price in wei."
+        }
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      }
+    },
+    "title": "Oracle",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "changeFees((uint64,uint64,uint64))": {
+        "notice": "Change the fee structure for username pricing."
+      },
+      "price(uint8,uint128)": {
+        "notice": "Calculate the price for a username based on its length and the desired duration."
+      }
+    },
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 7,
+        "contract": "contracts/Oracle.sol:Oracle",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 2652,
+        "contract": "contracts/Oracle.sol:Oracle",
+        "label": "yearlyUsernameFees",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_struct(YearlyUsernameFees)2649_storage"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_struct(YearlyUsernameFees)2649_storage": {
+        "encoding": "inplace",
+        "label": "struct Oracle.YearlyUsernameFees",
+        "members": [
+          {
+            "astId": 2644,
+            "contract": "contracts/Oracle.sol:Oracle",
+            "label": "lengthThree",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint64"
+          },
+          {
+            "astId": 2646,
+            "contract": "contracts/Oracle.sol:Oracle",
+            "label": "lengthFour",
+            "offset": 8,
+            "slot": "0",
+            "type": "t_uint64"
+          },
+          {
+            "astId": 2648,
+            "contract": "contracts/Oracle.sol:Oracle",
+            "label": "lengthFiveOrMore",
+            "offset": 16,
+            "slot": "0",
+            "type": "t_uint64"
+          }
+        ],
+        "numberOfBytes": "32"
+      },
+      "t_uint64": {
+        "encoding": "inplace",
+        "label": "uint64",
+        "numberOfBytes": "8"
+      }
+    }
+  }
+}

@@ -43,6 +43,14 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       gasMultiplier: 2,
     },
+    lineat: {
+      url: "https://rpc.goerli.linea.build",
+      accounts: [PK],
+      chainId: 59140,
+      live: true,
+      saveDeployments: true,
+      gasMultiplier: 2,
+    },
   },
 };
 
