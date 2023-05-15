@@ -66,6 +66,34 @@ describe("UsernameController", function () {
 
         expect(tokenData.name).to.equal(name);
       });
+      it("Should not register a new username and allow same name to be registered", async function () {
+        const { oracle, usernameNFT, usernameController, owner, addr1 } =
+          await loadFixture(deployDummyController);
+
+        const name = "testuser";
+        const duration = 2 * SECONDS_PER_YEAR;
+
+        const price = await oracle.price(name.length, duration);
+
+        await usernameController.register(name, duration, {
+          value: price,
+        });
+        const tokenId = await usernameNFT.nameToTokenId(name);
+
+        expect(await usernameNFT.ownerOf(tokenId)).to.equal(owner.address);
+
+        const tokenData = await usernameNFT.tokenData(tokenId);
+
+        expect(tokenData.name).to.equal(name);
+
+        const duration2 = 3 * SECONDS_PER_YEAR;
+
+        const price2 = await oracle.price(name.length, duration2);
+
+        await usernameController.connect(addr1).register(name, duration2, {
+          value: price2,
+        });
+      });
       it("Should register a new username and mint an NFT for a previously expired username", async function () {
         const { oracle, usernameNFT, usernameController, owner, addr1 } =
           await loadFixture(deployDummyController);
