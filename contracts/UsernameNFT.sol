@@ -378,7 +378,7 @@ contract UsernameNFT is ERC721, Ownable {
         return
             string(
                 abi.encodePacked(
-                    '{"name": ".linea Username NFTs',
+                    '{"name": ".linea Username NFTs ',
                     getDisplayName(tokenId),
                     '", "description": "',
                     description,
