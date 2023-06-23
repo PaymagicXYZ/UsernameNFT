@@ -51,6 +51,14 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       gasMultiplier: 2,
     },
+    optimism: {
+      url: "https://rpc.ankr.com/optimism",
+      accounts: [PK],
+      chainId: 10,
+      live: true,
+      saveDeployments: true,
+      gasMultiplier: 2,
+    },
   },
 };
 
