@@ -43,6 +43,14 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       gasMultiplier: 2,
     },
+    pzkevm: {
+      url: "https://zkevm-rpc.com",
+      accounts: [PK],
+      chainId: 1101,
+      live: true,
+      saveDeployments: true,
+      gasMultiplier: 2,
+    },
     lineat: {
       url: "https://rpc.goerli.linea.build",
       accounts: [PK],
