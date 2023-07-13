@@ -6,9 +6,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const name = "UsernameNFT";
-  const symbol = "UNFT";
-  const domain = "example";
+  const name = ".zkevm Username NFTs";
+  const symbol = "zkevm";
+  const domain = "zkevm";
 
   await deploy("UsernameNFT", {
     from: deployer,

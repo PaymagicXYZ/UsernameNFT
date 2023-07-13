@@ -1,73 +1,77 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "abdk-libraries-solidity/ABDKMath64x64.sol";
 
 /**
  * @title Oracle
  * @dev Oracle contract returns a price set by the oracle contract owner.
- * The owner can change the base price. The price is inversely proportional to the natural logarithm of the username length and is multiplied by the duration.
+ * The owner can change the fee structure. The price is determined by the username length and is multiplied by the duration.
  */
 contract Oracle is Ownable {
-    uint public basePrice;
+    uint32 constant SECONDS_PER_YEAR = 31_536_000;
+    uint64 constant FACTOR = 10 ** 18;
 
-    event BasePriceUpdated(uint oldBasePrice, uint newBasePrice);
-
-    constructor(uint _basePrice) {
-        basePrice = _basePrice;
+    struct YearlyUsernameFees {
+        uint64 lengthThree;
+        uint64 lengthFour;
+        uint64 lengthFiveOrMore;
     }
 
-    error UsernameTooShortError();
+    YearlyUsernameFees public yearlyUsernameFees;
+
+    constructor() {
+        yearlyUsernameFees = YearlyUsernameFees({
+            lengthThree: 0.32 ether,
+            lengthFour: 0.08 ether,
+            lengthFiveOrMore: 0.0025 ether
+        });
+    }
+
+    event FeesUpdated(YearlyUsernameFees oldFees, YearlyUsernameFees newFees);
+
+    error InvalidUsernameLength();
 
     /**
-     * @notice Calculates and returns the price for a username based on its length and duration. The price is determined by the natural logarithm of the username length and is inversely proportional to the length.
-     * @dev The function reverts if the username length is less than 3. The base price is returned if the username length is exactly 3.
+     * @notice Calculate the price for a username based on its length and the desired duration.
      * @param usernameLength The length of the username.
-     * @param durationInYears The duration in years for which the price is calculated.
-     * @return uint - The current price.
+     * @param durationInSeconds The desired duration in seconds.
+     * @return The price in wei.
+     * @dev Reverts if the username length is less than 3.
      */
     function price(
-        uint usernameLength,
-        uint8 durationInYears
+        uint8 usernameLength,
+        uint128 durationInSeconds
     ) external view returns (uint) {
         if (usernameLength < 3) {
-            revert UsernameTooShortError();
+            revert InvalidUsernameLength();
         }
 
+        uint fee;
         if (usernameLength == 3) {
-            return basePrice * durationInYears;
+            fee = yearlyUsernameFees.lengthThree;
+        } else if (usernameLength == 4) {
+            fee = yearlyUsernameFees.lengthFour;
+        } else {
+            fee = yearlyUsernameFees.lengthFiveOrMore;
         }
 
-        // Calculate the natural logarithm of the username length
-        int128 lnUsernameLength = ABDKMath64x64.ln(
-            ABDKMath64x64.fromUInt(usernameLength)
-        );
+        uint256 durationInYears = (durationInSeconds * FACTOR) /
+            SECONDS_PER_YEAR;
 
-        // Calculate the factor as 2 divided by the username length
-        int128 factor = ABDKMath64x64.div(
-            ABDKMath64x64.fromUInt(2),
-            ABDKMath64x64.fromUInt(usernameLength)
-        );
-
-        // Calculate the final price by multiplying the duration in years,  base price, ln(usernameLength), and the factor
-        return
-            durationInYears *
-            ABDKMath64x64.toUInt(
-                ABDKMath64x64.mul(
-                    ABDKMath64x64.fromUInt(basePrice),
-                    ABDKMath64x64.mul(lnUsernameLength, factor)
-                )
-            );
+        return (fee * durationInYears) / FACTOR;
     }
 
     /**
-     * @notice Allows the owner to set a new base price.
-     * @param newBasePrice The new base price to be set.
+     * @notice Change the fee structure for username pricing.
+     * @param newFees The new fee structure.
+     * @dev Emits a FeesUpdated event with the old and new fee structures.
+     * @dev Only callable by the contract owner.
      */
-    function setBasePrice(uint newBasePrice) external onlyOwner {
-        uint oldBasePrice = basePrice;
-        basePrice = newBasePrice;
-
-        emit BasePriceUpdated(oldBasePrice, newBasePrice);
+    function changeFees(
+        YearlyUsernameFees calldata newFees
+    ) external onlyOwner {
+        YearlyUsernameFees memory oldFees = yearlyUsernameFees;
+        yearlyUsernameFees = newFees;
+        emit FeesUpdated(oldFees, newFees);
     }
 }
