@@ -51,6 +51,14 @@ const config: HardhatUserConfig = {
       saveDeployments: true,
       gasMultiplier: 2,
     },
+    linea: {
+      url: `https://linea-mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
+      accounts: [PK],
+      chainId: 59144,
+      live: true,
+      saveDeployments: true,
+      gasMultiplier: 4,
+    },
   },
 };
 
