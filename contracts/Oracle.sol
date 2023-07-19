@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @dev Oracle contract returns a price set by the oracle contract owner.
  * The owner can change the fee structure. The price is determined by the username length and is multiplied by the duration.
  */
-contract Oracle is Ownable {
+abstract contract Oracle is Ownable {
     uint32 constant SECONDS_PER_YEAR = 31_536_000;
     uint64 constant FACTOR = 10 ** 18;
 
@@ -19,12 +19,8 @@ contract Oracle is Ownable {
 
     YearlyUsernameFees public yearlyUsernameFees;
 
-    constructor() {
-        yearlyUsernameFees = YearlyUsernameFees({
-            lengthThree: 0.32 ether,
-            lengthFour: 0.08 ether,
-            lengthFiveOrMore: 0.0025 ether
-        });
+    constructor(YearlyUsernameFees memory _yearlyUsernameFees) {
+        yearlyUsernameFees = _yearlyUsernameFees;
     }
 
     event FeesUpdated(YearlyUsernameFees oldFees, YearlyUsernameFees newFees);
@@ -41,25 +37,7 @@ contract Oracle is Ownable {
     function price(
         uint8 usernameLength,
         uint128 durationInSeconds
-    ) external view returns (uint) {
-        if (usernameLength < 3) {
-            revert InvalidUsernameLength();
-        }
-
-        uint fee;
-        if (usernameLength == 3) {
-            fee = yearlyUsernameFees.lengthThree;
-        } else if (usernameLength == 4) {
-            fee = yearlyUsernameFees.lengthFour;
-        } else {
-            fee = yearlyUsernameFees.lengthFiveOrMore;
-        }
-
-        uint256 durationInYears = (durationInSeconds * FACTOR) /
-            SECONDS_PER_YEAR;
-
-        return (fee * durationInYears) / FACTOR;
-    }
+    ) external view virtual returns (uint);
 
     /**
      * @notice Change the fee structure for username pricing.

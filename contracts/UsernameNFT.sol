@@ -4,47 +4,9 @@ import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {UsernameController} from "./UsernameController.sol";
 import {Base64} from "solady/src/utils/Base64.sol";
-import {ERC165Storage} from "@openzeppelin/contracts/utils/introspection/ERC165Storage.sol";
-
-interface IERC634 {
-    function text(
-        bytes32 node,
-        string calldata key
-    ) external view returns (string memory);
-
-    function setText(
-        bytes32 node,
-        string calldata key,
-        string calldata value
-    ) external;
-}
-
-contract ERC634 is IERC634, ERC165Storage {
-    mapping(bytes32 => mapping(string => string)) private _textRecords;
-
-    constructor() {
-        ERC165Storage._registerInterface(type(IERC634).interfaceId);
-    }
-
-    function text(
-        bytes32 node,
-        string memory key
-    ) public view override returns (string memory) {
-        return _textRecords[node][key];
-    }
-
-    function setText(
-        bytes32 node,
-        string memory key,
-        string memory value
-    ) public override {
-        require(
-            msg.sender == ownerOf(uint256(node)),
-            "TextRecords: caller is not the owner"
-        );
-        _textRecords[node][key] = value;
-    }
-}
+import {IERC634} from "./interfaces/IERC634.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 /**
  * @title UsernameNFT
@@ -52,7 +14,7 @@ contract ERC634 is IERC634, ERC165Storage {
  * and has an associated resolved address. The contract also stores the duration for which the username
  * is registered and the timestamp when it was minted or renewed.
  */
-abstract contract UsernameNFT is ERC721, Ownable, ERC634 {
+abstract contract UsernameNFT is ERC721, Ownable, IERC634 {
     using Base64 for bytes;
 
     string public domain;
@@ -76,6 +38,7 @@ abstract contract UsernameNFT is ERC721, Ownable, ERC634 {
 
     mapping(uint256 => TokenData) public tokenData;
     mapping(address => uint256) public primaryNameTokenId;
+    mapping(bytes32 => mapping(string => string)) private _textRecords;
 
     event NameRegistered(
         address indexed resolveAddress,
@@ -409,5 +372,58 @@ abstract contract UsernameNFT is ERC721, Ownable, ERC634 {
         string memory json = Base64.encode(bytes(generateJSON(tokenId)));
 
         return string(abi.encodePacked("data:application/json;base64,", json));
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────────
+    // ERC634 functions:
+    // ────────────────────────────────────────────────────────────────────────────────
+
+    /**
+     * @notice Returns the text record associated with a given node and key.
+     * @param node The node identifier.
+     * @param key The key of the text record.
+     * @return string memory The text record associated with the given node and key.
+     * @dev This function is part of the ERC634 standard for managing text records associated with NFTs.
+     * It returns the text record associated with the given node and key.
+     */
+    function text(
+        bytes32 node,
+        string memory key
+    ) public view override returns (string memory) {
+        return _textRecords[node][key];
+    }
+
+    /**
+     * @notice Sets the text record for a given node and key.
+     * @param node The node identifier.
+     * @param key The key of the text record.
+     * @param value The value to be set for the text record.
+     * @dev This function is part of the ERC634 standard for managing text records associated with NFTs.
+     * It sets the text record for the given node and key to the provided value.
+     * This function can only be called by the owner of the NFT associated with the node.
+     */
+    function setText(
+        bytes32 node,
+        string memory key,
+        string memory value
+    ) public override onlyNFTOwner(uint256(node)) {
+        _textRecords[node][key] = value;
+    }
+
+    /**
+     * @notice Checks if the contract implements an interface.
+     * @param interfaceId The interface identifier, as specified in ERC-165.
+     * @return bool True if the contract implements `interfaceId`.
+     * @dev This function overrides the `supportsInterface` function in both ERC721 and ERC165Storage contracts.
+     * It checks if the interfaceId is one of IERC634, IERC165, IERC721 or any other interface that the contract might implement.
+     */
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC721) returns (bool) {
+        return
+            interfaceId == type(IERC634).interfaceId ||
+            interfaceId == type(IERC165).interfaceId ||
+            interfaceId == type(IERC721).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 }
