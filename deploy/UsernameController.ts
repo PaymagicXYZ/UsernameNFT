@@ -8,8 +8,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const oracleAddress = (await deployments.get("Oracle")).address;
-  const usernameNFTAddress = (await deployments.get("UsernameNFT")).address;
+  const oracleAddress = (await deployments.get("ExampleOracle")).address;
+  const usernameNFTAddress = (await deployments.get("ExampleUsernameNFT"))
+    .address;
 
   await deploy("UsernameController", {
     from: deployer,
@@ -19,5 +20,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 
 export default func;
-func.dependencies = ["Oracle", "UsernameNFT"];
+func.dependencies = ["ExampleOracle", "ExampleUsernameNFT"];
 func.tags = ["UsernameController"];
