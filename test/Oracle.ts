@@ -1,7 +1,7 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { parseEther, formatEther } from "ethers/lib/utils";
-import { Oracle__factory } from "../typechain-types";
+import { Oracle__factory, ExampleOracle__factory } from "../typechain-types";
 import { ethers } from "hardhat";
 import { BigNumber } from "ethers";
 import { SECONDS_PER_YEAR } from "../constants";
@@ -10,7 +10,7 @@ describe("Oracle", function () {
   async function deployOracle() {
     const [owner, random] = await ethers.getSigners();
 
-    const Oracle = new Oracle__factory(owner);
+    const Oracle = new ExampleOracle__factory(owner);
     const oracle = await Oracle.deploy();
 
     return { oracle, random };

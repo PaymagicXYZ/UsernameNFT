@@ -1,8 +1,8 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import {
-  Oracle__factory,
+  ExampleOracle__factory,
   UsernameController__factory,
-  UsernameNFT__factory,
+  ExampleUsernameNFT__factory,
 } from "../typechain-types";
 import { expect } from "chai";
 import { parseEther } from "ethers/lib/utils";
@@ -20,23 +20,26 @@ describe("UsernameController", function () {
 
     const [owner, addr1, addr2] = await ethers.getSigners();
 
-    const Oracle = new Oracle__factory(owner);
+    const Oracle = new ExampleOracle__factory(owner);
     const oracle = await Oracle.deploy();
 
-    const UsernameNFT = new UsernameNFT__factory(owner);
-    const usernameNFT = await UsernameNFT.deploy("UsernameNFT", "UNFT", "evm");
-
+    const ExampleNFT = new ExampleUsernameNFT__factory(owner);
+    const exampleNFT = await ExampleNFT.deploy(
+      "ExampleexampleNFT",
+      "EUNFT",
+      "example"
+    );
     const UsernameController = new UsernameController__factory(owner);
     const usernameController = await UsernameController.deploy(
       oracle.address,
-      usernameNFT.address
+      exampleNFT.address
     );
 
-    await usernameNFT.setController(usernameController.address);
+    await exampleNFT.setController(usernameController.address);
 
     return {
       oracle,
-      usernameNFT,
+      exampleNFT,
       usernameController,
       owner,
       addr1,
@@ -47,7 +50,7 @@ describe("UsernameController", function () {
   describe("UsernameController", function () {
     describe("Register", function () {
       it("Should register a new username and mint an NFT", async function () {
-        const { oracle, usernameNFT, usernameController, owner, addr1 } =
+        const { oracle, exampleNFT, usernameController, owner, addr1 } =
           await loadFixture(deployDummyController);
 
         const name = "testuser";
@@ -58,16 +61,16 @@ describe("UsernameController", function () {
         await usernameController.register(name, duration, {
           value: price,
         });
-        const tokenId = await usernameNFT.nameToTokenId(name);
+        const tokenId = await exampleNFT.nameToTokenId(name);
 
-        expect(await usernameNFT.ownerOf(tokenId)).to.equal(owner.address);
+        expect(await exampleNFT.ownerOf(tokenId)).to.equal(owner.address);
 
-        const tokenData = await usernameNFT.tokenData(tokenId);
+        const tokenData = await exampleNFT.tokenData(tokenId);
 
         expect(tokenData.name).to.equal(name);
       });
       it("Should register a new username and mint an NFT for a previously expired username", async function () {
-        const { oracle, usernameNFT, usernameController, owner, addr1 } =
+        const { oracle, exampleNFT, usernameController, owner, addr1 } =
           await loadFixture(deployDummyController);
 
         const name = "testuser";
@@ -78,11 +81,11 @@ describe("UsernameController", function () {
         await usernameController.register(name, duration, {
           value: price,
         });
-        const tokenId = await usernameNFT.nameToTokenId(name);
+        const tokenId = await exampleNFT.nameToTokenId(name);
 
-        expect(await usernameNFT.ownerOf(tokenId)).to.equal(owner.address);
+        expect(await exampleNFT.ownerOf(tokenId)).to.equal(owner.address);
 
-        const tokenData = await usernameNFT.tokenData(tokenId);
+        const tokenData = await exampleNFT.tokenData(tokenId);
 
         expect(tokenData.name).to.equal(name);
 
@@ -90,14 +93,14 @@ describe("UsernameController", function () {
         const totalSeconds = duration + 1;
         await setBlockTimestamp(totalSeconds + blocktimestamp);
 
-        expect(await usernameNFT.isExpired(tokenId)).to.equal(true);
+        expect(await exampleNFT.isExpired(tokenId)).to.equal(true);
 
         await usernameController.connect(addr1).register(name, duration, {
           value: price,
         });
 
-        expect(await usernameNFT.ownerOf(tokenId)).to.equal(addr1.address);
-        expect(await usernameNFT.isExpired(tokenId)).to.equal(false);
+        expect(await exampleNFT.ownerOf(tokenId)).to.equal(addr1.address);
+        expect(await exampleNFT.isExpired(tokenId)).to.equal(false);
       });
       it("Should fail if not enough Ether is sent", async function () {
         const { oracle, usernameController, addr1 } = await loadFixture(
@@ -125,7 +128,7 @@ describe("UsernameController", function () {
     });
     describe("Renew", function () {
       it("Should renew the registration of not yet expired username", async function () {
-        const { usernameController, addr1, usernameNFT, oracle } =
+        const { usernameController, addr1, exampleNFT, oracle } =
           await loadFixture(deployDummyController);
         const name = "testuser";
         const duration = 2 * SECONDS_PER_YEAR;
@@ -134,7 +137,7 @@ describe("UsernameController", function () {
         await usernameController.register(name, duration, {
           value: registrationPrice,
         });
-        const tokenId = await usernameNFT.nameToTokenId(name);
+        const tokenId = await exampleNFT.nameToTokenId(name);
 
         const renewalPrice = await oracle.price(
           name.length,
@@ -143,11 +146,11 @@ describe("UsernameController", function () {
         await usernameController.renew(tokenId, additionalDuration, {
           value: renewalPrice,
         });
-        const tokenData = await usernameNFT.tokenData(tokenId);
+        const tokenData = await exampleNFT.tokenData(tokenId);
         expect(tokenData.duration).to.equal(duration + additionalDuration);
       });
       it("Should renew the registration of an expired username given not already taken", async function () {
-        const { usernameController, addr1, usernameNFT, oracle } =
+        const { usernameController, addr1, exampleNFT, oracle } =
           await loadFixture(deployDummyController);
         const name = "testuser";
         const duration = 2 * SECONDS_PER_YEAR;
@@ -160,15 +163,15 @@ describe("UsernameController", function () {
         const blocktimestamp = await getBlockTimestamp();
         const totalSeconds = duration * SECONDS_PER_YEAR;
         await setBlockTimestamp(blocktimestamp + 1 + totalSeconds);
-        const tokenId = await usernameNFT.nameToTokenId(name);
+        const tokenId = await exampleNFT.nameToTokenId(name);
         await usernameController.renew(tokenId, newDuration, {
           value: renewalPrice,
         });
-        const tokenData = await usernameNFT.tokenData(tokenId);
+        const tokenData = await exampleNFT.tokenData(tokenId);
         expect(tokenData.duration).to.equal(newDuration);
       });
       it("Should not renew the registration of an expired username given its already taken", async function () {
-        const { usernameController, addr1, addr2, usernameNFT, oracle } =
+        const { usernameController, addr1, addr2, exampleNFT, oracle } =
           await loadFixture(deployDummyController);
         const name = "testuser";
         const durationInYears = 2;
@@ -186,7 +189,7 @@ describe("UsernameController", function () {
           .register(name, durationInYears, {
             value: registrationPrice,
           });
-        const tokenId = await usernameNFT.nameToTokenId(name);
+        const tokenId = await exampleNFT.nameToTokenId(name);
         const blocktimestamp = await getBlockTimestamp();
         const totalSeconds = durationInYears * SECONDS_PER_YEAR;
         await setBlockTimestamp(blocktimestamp + totalSeconds + 1);
@@ -205,7 +208,7 @@ describe("UsernameController", function () {
         );
       });
       it("Should not renew if not called by token owner", async function () {
-        const { usernameController, addr1, usernameNFT, oracle } =
+        const { usernameController, addr1, exampleNFT, oracle } =
           await loadFixture(deployDummyController);
         const name = "testuser";
         const durationInYears = 2;
@@ -224,7 +227,7 @@ describe("UsernameController", function () {
         const blocktimestamp = await getBlockTimestamp();
         const totalSeconds = durationInYears * SECONDS_PER_YEAR;
         await setBlockTimestamp(blocktimestamp + totalSeconds + 1);
-        const tokenId = await usernameNFT.nameToTokenId(name);
+        const tokenId = await exampleNFT.nameToTokenId(name);
         await expect(
           usernameController
             .connect(addr1)
@@ -237,7 +240,7 @@ describe("UsernameController", function () {
         );
       });
       it("Should fail if not enough Ether is sent", async function () {
-        const { oracle, usernameNFT, usernameController, owner, addr1 } =
+        const { oracle, exampleNFT, usernameController, owner, addr1 } =
           await loadFixture(deployDummyController);
         const name = "testuser";
         const duration = 2 * SECONDS_PER_YEAR;
@@ -246,7 +249,7 @@ describe("UsernameController", function () {
         await usernameController.connect(owner).register(name, duration, {
           value: registrationPrice,
         });
-        const tokenId = await usernameNFT.nameToTokenId(name);
+        const tokenId = await exampleNFT.nameToTokenId(name);
         await expect(
           usernameController.connect(owner).renew(tokenId, additionalDuration, {
             value: parseEther("0.0000000001"),

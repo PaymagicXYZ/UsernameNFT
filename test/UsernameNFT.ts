@@ -1,9 +1,9 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import {
-  Oracle__factory,
   UsernameController__factory,
   ExampleUsernameNFT__factory,
+  ExampleOracle__factory,
 } from "../typechain-types";
 import { ethers } from "hardhat";
 import { parseEther } from "ethers/lib/utils";
@@ -18,7 +18,7 @@ describe("exampleNFT", function () {
   async function deployexampleNFT() {
     const [owner, addr1, addr2] = await ethers.getSigners();
 
-    const Oracle = new Oracle__factory(owner);
+    const Oracle = new ExampleOracle__factory(owner);
     const oracle = await Oracle.deploy();
 
     const ExampleNFT = new ExampleUsernameNFT__factory(owner);
@@ -519,6 +519,51 @@ describe("exampleNFT", function () {
         await expect(
           exampleNFT.tokenURI(tokenId)
         ).to.be.revertedWithCustomError(exampleNFT, "InvalidTokenError");
+      });
+    });
+    describe("ERC-634 Text Records", () => {
+      it("Should return correct text", async function () {
+        const { exampleNFT, owner, addr1 } = await loadFixture(
+          deployexampleNFT
+        );
+        const node = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("node"));
+        const key = "key";
+        await expect(await exampleNFT.text(node, key)).to.equal("");
+      });
+      it("Should set and return correct text", async function () {
+        const { exampleNFT, owner, addr1 } = await loadFixture(
+          deployexampleNFT
+        );
+
+        await exampleNFT.setController(owner.address);
+        const name = "testname";
+        const duration = 10000; // 10000 seconds
+        await exampleNFT.mint(owner.address, name, duration);
+        const tokenId = await exampleNFT.nameToTokenId(name);
+        const tokenIdHex = tokenId._hex;
+
+        const key = "key";
+        const value = "value";
+        await exampleNFT.setText(tokenIdHex, key, value);
+        await expect(await exampleNFT.text(tokenIdHex, key)).to.equal(value);
+      });
+      it("Should only be callable by token owner", async function () {
+        const { exampleNFT, owner, addr1 } = await loadFixture(
+          deployexampleNFT
+        );
+
+        await exampleNFT.setController(owner.address);
+        const name = "testname";
+        const duration = 10000; // 10000 seconds
+        await exampleNFT.mint(owner.address, name, duration);
+        const tokenId = await exampleNFT.nameToTokenId(name);
+        const tokenIdHex = tokenId._hex;
+
+        const key = "key";
+        const value = "value";
+        expect(
+          exampleNFT.connect(addr1).setText(tokenIdHex, key, value)
+        ).to.revertedWithCustomError(exampleNFT, "OnlyNFTOwnerError");
       });
     });
   });
